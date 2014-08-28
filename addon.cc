@@ -29,6 +29,19 @@ using v8::String;
 
 class Connection : public node::ObjectWrap {
   public:
+
+    Connection() : ObjectWrap() {
+      TRACE("Connection::Constructor");
+      pq = NULL;
+      lastResult = NULL;
+      read_watcher.data = this;
+      write_watcher.data = this;
+    }
+
+    ~Connection() {
+      LOG("Destructor");
+    }
+
     static NAN_METHOD(Create) {
       NanScope();
 
@@ -45,10 +58,12 @@ class Connection : public node::ObjectWrap {
 
       Connection *self = ObjectWrap::Unwrap<Connection>(args.This());
 
-      char* paramString = *NanUtf8String(args[0]);
+      char* paramString = NewCString(args[0]);
 
       TRACEF("Connection parameters: %s\n", paramString)
       self->pq = PQconnectdb(paramString);
+
+      delete[] paramString;
 
       ConnStatusType status = PQstatus(self->pq);
 
@@ -101,12 +116,12 @@ class Connection : public node::ObjectWrap {
       NanScope();
 
       Connection *self = THIS();
-      char* commandText = *NanUtf8String(args[0]);
+      char* commandText = NewCString(args[0]);
 
       TRACEF("Connection::Exec: %s\n", commandText);
-
-
       PGresult* result = PQexec(self->pq, commandText);
+
+      delete[] commandText;
 
       if(self->lastResult != NULL) {
         NanThrowError("You forgot to clear the lastResult");
@@ -121,7 +136,12 @@ class Connection : public node::ObjectWrap {
       NanScope();
 
       Connection *self = THIS();
-      char* commandText = *NanUtf8String(args[0]);
+
+      if(self->lastResult != NULL) {
+        NanThrowError("You forgot to clear the lastResult");
+      }
+
+      char* commandText = NewCString(args[0]);
 
       TRACEF("Connection::Exec: %s\n", commandText);
 
@@ -139,11 +159,8 @@ class Connection : public node::ObjectWrap {
         //expect every other value to be a string...
         //make sure aggresive type checking is done
         //on the JavaScript side before calling
-        parameters[i] = *NanUtf8String(val);
+        parameters[i] = NewCString(val);
       }
-
-      TRACEF("%s\n", commandText);
-      TRACEF("%d\n", numberOfParams);
 
       PGresult* result = PQexecParams(
           self->pq,
@@ -156,11 +173,11 @@ class Connection : public node::ObjectWrap {
           0 //result format of text
           );
 
-      delete [] parameters;
-
-      if(self->lastResult != NULL) {
-        NanThrowError("You forgot to clear the lastResult");
+      delete [] commandText;
+      for(int i = 0; i < numberOfParams; i++) {
+        delete [] parameters[i];
       }
+      delete [] parameters;
 
       self->lastResult = result;
 
@@ -297,18 +314,6 @@ class Connection : public node::ObjectWrap {
       NanReturnValue(NanNew<v8::String>(status));
     }
 
-    Connection() : ObjectWrap() {
-      TRACE("Connection::Constructor");
-      pq = NULL;
-      lastResult = NULL;
-      read_watcher.data = this;
-      write_watcher.data = this;
-    }
-
-    ~Connection() {
-      LOG("Destructor");
-    }
-
   private:
     PGconn* pq;
     PGresult* lastResult;
@@ -331,8 +336,12 @@ class Connection : public node::ObjectWrap {
       uv_poll_stop(&read_watcher);
     }
 
-    static char* MallocCString(v8::Handle<v8::Value> v8String) {
-
+    static char* NewCString(v8::Handle<v8::Value> val) {
+      v8::Local<v8::String> str = val->ToString();
+      int len = str->Utf8Length() + 1;
+      char* buffer = new char[len];
+      str->WriteUtf8(buffer, len);
+      return buffer;
     }
 };
 
