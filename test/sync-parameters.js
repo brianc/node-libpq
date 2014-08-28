@@ -9,7 +9,6 @@ describe('sync query with parameters', function() {
     this.pq.execParams(queryText, ['Brian']);
     assert.strictEqual(this.pq.ntuples(), 1);
     assert.strictEqual(this.pq.getvalue(0, 0), 'Brian');
-    this.pq.clear();
   });
 
   it('works with a number parameter', function() {
@@ -17,14 +16,11 @@ describe('sync query with parameters', function() {
     this.pq.execParams(queryText, [32]);
     assert.strictEqual(this.pq.ntuples(), 1);
     assert.strictEqual(this.pq.getvalue(0, 0), '32');
-    this.pq.clear();
   });
 
   it('works with multiple parameters', function() {
     var queryText = 'INSERT INTO test_data(name, age) VALUES($1, $2)';
     this.pq.execParams(queryText, ['Barkley', 4]);
     assert.equal(this.pq.resultErrorMessage(), '');
-    this.pq.clear();
   });
-
 });

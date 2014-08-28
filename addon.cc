@@ -40,6 +40,12 @@ class Connection : public node::ObjectWrap {
 
     ~Connection() {
       LOG("Destructor");
+      //if we forgot to clean things up manually
+      //make sure we clean up all our data
+      ClearLastResult();
+      if(pq != NULL) {
+        PQfinish(pq);
+      }
     }
 
     static NAN_METHOD(Create) {
@@ -104,10 +110,8 @@ class Connection : public node::ObjectWrap {
 
       Connection *self = THIS();
 
+      self->ClearLastResult();
       PQfinish(self->pq);
-
-      //LOG("Warning: NEED TO UNREF");
-      //self->Unref();
 
       NanReturnUndefined();
     }
@@ -123,11 +127,7 @@ class Connection : public node::ObjectWrap {
 
       delete[] commandText;
 
-      if(self->lastResult != NULL) {
-        NanThrowError("You forgot to clear the lastResult");
-      }
-
-      self->lastResult = result;
+      self->SetLastResult(result);
 
       NanReturnUndefined();
     }
@@ -136,10 +136,6 @@ class Connection : public node::ObjectWrap {
       NanScope();
 
       Connection *self = THIS();
-
-      if(self->lastResult != NULL) {
-        NanThrowError("You forgot to clear the lastResult");
-      }
 
       char* commandText = NewCString(args[0]);
 
@@ -179,7 +175,7 @@ class Connection : public node::ObjectWrap {
       }
       delete [] parameters;
 
-      self->lastResult = result;
+      self->SetLastResult(result);
 
       NanReturnUndefined();
     }
@@ -190,11 +186,7 @@ class Connection : public node::ObjectWrap {
       TRACE("Connection::Clear");
       Connection *self = THIS();
 
-      if(self->lastResult == NULL) {
-        NanThrowError("Cannot clear a null result");
-      }
-      PQclear(self->lastResult);
-      self->lastResult = NULL;
+      self->ClearLastResult();
 
       NanReturnUndefined();
     }
@@ -334,6 +326,19 @@ class Connection : public node::ObjectWrap {
 
     void ReadStop() {
       uv_poll_stop(&read_watcher);
+    }
+
+    void ClearLastResult() {
+      LOG("Connection::ClearLastResult");
+      if(lastResult == NULL) return;
+      PQclear(lastResult);
+      lastResult = NULL;
+    }
+
+    void SetLastResult(PGresult* result) {
+      LOG("Connection::SetLastResult");
+      ClearLastResult();
+      lastResult = result;
     }
 
     static char* NewCString(v8::Handle<v8::Value> val) {
