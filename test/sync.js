@@ -32,7 +32,6 @@ describe('result checking', function() {
   });
 
   after(function() {
-    this.pq.clear();
     this.pq.finish();
   });
 
@@ -58,6 +57,12 @@ describe('result checking', function() {
     var date = new Date(Date.parse(val));
     assert.equal(date.getFullYear(), now.getFullYear());
     assert.equal(date.getMonth(), now.getMonth());
+  });
+
+  it('can manually clear result multiple times', function() {
+    this.pq.clear();
+    this.pq.clear();
+    this.pq.clear();
   });
 });
 

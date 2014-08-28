@@ -11,10 +11,6 @@ describe('low-level query integration tests', function() {
       this.pq.exec('SELECT * FROM test_data');
     });
 
-    after(function() {
-      this.pq.clear();
-    });
-
     it('has correct tuples', function() {
       assert.strictEqual(this.pq.ntuples(), 3);
     });
