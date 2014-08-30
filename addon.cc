@@ -67,7 +67,7 @@ class Connection : public node::ObjectWrap {
       char* paramString = NewCString(args[0]);
 
       TRACEF("Connection parameters: %s\n", paramString)
-      self->pq = PQconnectdb(paramString);
+        self->pq = PQconnectdb(paramString);
 
       delete[] paramString;
 
@@ -108,7 +108,7 @@ class Connection : public node::ObjectWrap {
       NanScope();
       TRACE("Connection::Finish::finish")
 
-      Connection *self = THIS();
+        Connection *self = THIS();
 
       self->ClearLastResult();
       PQfinish(self->pq);
@@ -142,21 +142,9 @@ class Connection : public node::ObjectWrap {
       TRACEF("Connection::Exec: %s\n", commandText);
 
       v8::Local<v8::Array> jsParams = v8::Local<v8::Array>::Cast(args[1]);
+
       int numberOfParams = jsParams->Length();
-
-      char** parameters = new char*[numberOfParams];
-
-      for(int i = 0; i < numberOfParams; i++) {
-        v8::Handle<v8::Value> val = jsParams->Get(i);
-        if(val->IsNull()) {
-          parameters[i] = NULL;
-          continue;
-        }
-        //expect every other value to be a string...
-        //make sure aggresive type checking is done
-        //on the JavaScript side before calling
-        parameters[i] = NewCString(val);
-      }
+      char** parameters = NewCStringArray(jsParams);
 
       PGresult* result = PQexecParams(
           self->pq,
@@ -170,10 +158,7 @@ class Connection : public node::ObjectWrap {
           );
 
       delete [] commandText;
-      for(int i = 0; i < numberOfParams; i++) {
-        delete [] parameters[i];
-      }
-      delete [] parameters;
+      DeleteCStringArray(parameters, numberOfParams);
 
       self->SetLastResult(result);
 
@@ -206,6 +191,39 @@ class Connection : public node::ObjectWrap {
 
       NanReturnUndefined();
     }
+
+    static NAN_METHOD(ExecPrepared) {
+      NanScope();
+
+      Connection *self = THIS();
+
+      char* statementName = NewCString(args[0]);
+
+      TRACEF("Connection::ExecPrepared: %s\n", statementName);
+
+      v8::Local<v8::Array> jsParams = v8::Local<v8::Array>::Cast(args[1]);
+
+      int numberOfParams = jsParams->Length();
+      char** parameters = NewCStringArray(jsParams);
+
+      PGresult* result = PQexecPrepared(
+          self->pq,
+          statementName,
+          numberOfParams,
+          parameters, //const char* const* paramValues[]
+          NULL, //const int* paramLengths[]
+          NULL, //const int* paramFormats[],
+          0 //result format of text
+          );
+
+      delete [] statementName;
+      DeleteCStringArray(parameters, numberOfParams);
+
+      self->SetLastResult(result);
+
+      NanReturnUndefined();
+    }
+
 
     static NAN_METHOD(Clear) {
       NanScope();
@@ -369,29 +387,65 @@ class Connection : public node::ObjectWrap {
     }
 
     static char* NewCString(v8::Handle<v8::Value> val) {
+      NanScope();
+
       v8::Local<v8::String> str = val->ToString();
       int len = str->Utf8Length() + 1;
       char* buffer = new char[len];
       str->WriteUtf8(buffer, len);
       return buffer;
     }
+
+    static char** NewCStringArray(v8::Handle<v8::Array> jsParams) {
+      NanScope();
+
+      int numberOfParams = jsParams->Length();
+
+      char** parameters = new char*[numberOfParams];
+
+      for(int i = 0; i < numberOfParams; i++) {
+        v8::Handle<v8::Value> val = jsParams->Get(i);
+        if(val->IsNull()) {
+          parameters[i] = NULL;
+          continue;
+        }
+        //expect every other value to be a string...
+        //make sure aggresive type checking is done
+        //on the JavaScript side before calling
+        parameters[i] = NewCString(val);
+      }
+
+      return parameters;
+    }
+
+    static void DeleteCStringArray(char** array, int length) {
+      for(int i = 0; i < length; i++) {
+        delete [] array[i];
+      }
+      delete [] array;
+    }
 };
 
 
-// Expose synchronous and asynchronous access to our
-// // Estimate() function
+// Initialize the node addon
 void InitAddon(Handle<Object> exports) {
 
   v8::Local<v8::FunctionTemplate> tpl = NanNew<v8::FunctionTemplate>(Connection::Create);
   tpl->SetClassName(NanNew("PQ"));
   tpl->InstanceTemplate()->SetInternalFieldCount(1);
 
+  //connection initialization & management functions
   NODE_SET_PROTOTYPE_METHOD(tpl, "$connectSync", Connection::ConnectSync);
   NODE_SET_PROTOTYPE_METHOD(tpl, "$finish", Connection::Finish);
   NODE_SET_PROTOTYPE_METHOD(tpl, "$getLastErrorMessage", Connection::GetLastErrorMessage);
+
+  //sync query functions
   NODE_SET_PROTOTYPE_METHOD(tpl, "$exec", Connection::Exec);
   NODE_SET_PROTOTYPE_METHOD(tpl, "$execParams", Connection::ExecParams);
   NODE_SET_PROTOTYPE_METHOD(tpl, "$prepare", Connection::Prepare);
+  NODE_SET_PROTOTYPE_METHOD(tpl, "$execPrepared", Connection::ExecPrepared);
+
+  //result accessor functions
   NODE_SET_PROTOTYPE_METHOD(tpl, "$clear", Connection::Clear);
   NODE_SET_PROTOTYPE_METHOD(tpl, "$ntuples", Connection::Ntuples);
   NODE_SET_PROTOTYPE_METHOD(tpl, "$nfields", Connection::Nfields);
@@ -406,20 +460,3 @@ void InitAddon(Handle<Object> exports) {
 }
 
 NODE_MODULE(addon, InitAddon)
-
-
-//    static const char* GetConnectionStatusString(ConnStatusType status) {
-//      switch(status) {
-//        ENUM_TO_STRING(CONNECTION_OK);
-//        ENUM_TO_STRING(CONNECTION_BAD);
-//        ENUM_TO_STRING(CONNECTION_STARTED);
-//        ENUM_TO_STRING(CONNECTION_MADE);
-//        ENUM_TO_STRING(CONNECTION_AWAITING_RESPONSE);
-//        ENUM_TO_STRING(CONNECTION_AUTH_OK);
-//        ENUM_TO_STRING(CONNECTION_SETENV);
-//        ENUM_TO_STRING(CONNECTION_NEEDED);
-//        ENUM_TO_STRING(CONNECTION_SSL_STARTUP);
-//      }
-//
-//      return "WARNING: Unknown connection status type!";
-//    }

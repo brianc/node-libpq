@@ -50,6 +50,7 @@ PQ.prototype.execPrepared = function(statementName, parameters) {
   if(!parameters) {
     parameters = [];
   }
+  this.$execPrepared(statementName, parameters);
 }
 
 PQ.prototype.resultStatus = function() {
