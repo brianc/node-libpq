@@ -1,4 +1,7 @@
-var PQ = module.exports = require('./build/Release/addon').PQ;
+var PQ = module.exports = require('bindings')('addon.node').PQ;
+
+var EventEmitter = require('events').EventEmitter;
+var util = require('util')
 
 PQ.prototype.connectSync = function(paramString) {
   if(!paramString) {
@@ -31,6 +34,23 @@ PQ.prototype.execParams = function(commandText, parameters) {
   }
   this.$execParams(commandText, parameters);
 };
+
+PQ.prototype.prepare = function(statementName, commandText, nParams) {
+  if(!commandText) {
+    commandText = '';
+  }
+  nParams = Number(nParams) || 0;
+  this.$prepare(statementName, commandText, nParams);
+};
+
+PQ.prototype.execPrepared = function(statementName, parameters) {
+  if(!statementName) {
+    statementName = '';
+  }
+  if(!parameters) {
+    parameters = [];
+  }
+}
 
 PQ.prototype.resultStatus = function() {
   return this.$resultStatus();

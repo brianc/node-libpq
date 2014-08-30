@@ -180,6 +180,33 @@ class Connection : public node::ObjectWrap {
       NanReturnUndefined();
     }
 
+    static NAN_METHOD(Prepare) {
+      NanScope();
+
+      Connection *self = THIS();
+
+      char* statementName = NewCString(args[0]);
+      char* commandText = NewCString(args[1]);
+      int numberOfParams = args[2]->Int32Value();
+
+      TRACEF("Connection::Prepare: %s\n", statementName);
+
+      PGresult* result = PQprepare(
+          self->pq,
+          statementName,
+          commandText,
+          numberOfParams,
+          NULL //const Oid* paramTypes[]
+          );
+
+      delete [] statementName;
+      delete [] commandText;
+
+      self->SetLastResult(result);
+
+      NanReturnUndefined();
+    }
+
     static NAN_METHOD(Clear) {
       NanScope();
 
@@ -364,6 +391,7 @@ void InitAddon(Handle<Object> exports) {
   NODE_SET_PROTOTYPE_METHOD(tpl, "$getLastErrorMessage", Connection::GetLastErrorMessage);
   NODE_SET_PROTOTYPE_METHOD(tpl, "$exec", Connection::Exec);
   NODE_SET_PROTOTYPE_METHOD(tpl, "$execParams", Connection::ExecParams);
+  NODE_SET_PROTOTYPE_METHOD(tpl, "$prepare", Connection::Prepare);
   NODE_SET_PROTOTYPE_METHOD(tpl, "$clear", Connection::Clear);
   NODE_SET_PROTOTYPE_METHOD(tpl, "$ntuples", Connection::Ntuples);
   NODE_SET_PROTOTYPE_METHOD(tpl, "$nfields", Connection::Nfields);

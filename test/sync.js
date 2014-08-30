@@ -9,9 +9,8 @@ describe('connecting with bad credentials', function() {
       return;
     }
     assert.fail('Should have thrown an exception');
-  })
-})
-
+  });
+});
 
 describe('connecting with no credentials', function() {
   before(function() {
@@ -65,4 +64,3 @@ describe('result checking', function() {
     this.pq.clear();
   });
 });
-
