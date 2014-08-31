@@ -2,7 +2,11 @@
   'targets': [
     {
       'target_name': 'addon',
-      'sources': ['src/addon.cc'],
+      'sources': [
+        'src/connection.cc',
+        'src/connect-async-worker.cc',
+        'src/addon.cc'
+      ],
       'include_dirs': [
         '<!@(pg_config --includedir)',
         '<!(node -e "require(\'nan\')")'

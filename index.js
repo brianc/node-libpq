@@ -1,7 +1,7 @@
 var PQ = module.exports = require('bindings')('addon.node').PQ;
 
 var EventEmitter = require('events').EventEmitter;
-var util = require('util')
+var assert = require('assert');
 
 for(var key in EventEmitter.prototype) {
   PQ.prototype[key] = EventEmitter.prototype[key];
@@ -16,6 +16,18 @@ PQ.prototype.connectSync = function(paramString) {
     this.finish();
     throw new Error(this.errorMessage());
   }
+};
+
+PQ.prototype.connect = function(paramString, cb) {
+  if(typeof paramString == 'function') {
+    cb = paramString;
+    paramString = '';
+  }
+  if(!paramString) {
+    paramString = '';
+  }
+  assert(cb, 'Must provide a connection callback');
+  this.$connect(paramString, cb);
 };
 
 PQ.prototype.errorMessage = function() {
