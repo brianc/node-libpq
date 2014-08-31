@@ -5,12 +5,12 @@
 //#include "./async.h"
 
 
-//#define LOG(msg) ;
+#define LOG(msg) ;
 
-#define LOG(msg) printf("%s\n", msg);
-#define TRACEF(format, arg) printf(format, arg);
+//#define LOG(msg) printf("%s\n", msg);
+//#define TRACEF(format, arg) printf(format, arg);
 
-//#define TRACEF(format, arg) ;
+#define TRACEF(format, arg) ;
 
 #define TRACE(msg) LOG(msg)
 #define THIS() ObjectWrap::Unwrap<Connection>(args.This());

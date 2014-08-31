@@ -7,9 +7,6 @@ describe('connecting', function() {
   });
 });
 
-describe('callbacks', function() {
-  it('works', function() {
-    var client = new Client();
-    client.test();
-  })
+describe('async connecting', function() {
+  it('works', false);
 });

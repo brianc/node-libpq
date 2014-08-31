@@ -165,11 +165,3 @@ PQ.prototype.isNonBlocking = function() {
 PQ.prototype.flush = function() {
   return this.$flush();
 };
-
-PQ.prototype.test = function() {
-  this.$test();
-};
-
-PQ.prototype.callback = function() {
-  console.log('called!');
-};
