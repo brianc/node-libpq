@@ -54,17 +54,31 @@ describe('async simple query', function() {
     assert.strictEqual(pq.flush(), 0, 'Should have flushed query text');
     consume(pq, function() {
       assert.ifError(pq.errorMessage());
+
+      //first time there should be a result
       assert(pq.getResult());
+
+      //call 'getResult' until it returns false indicating
+      //there is no more input to consume
       assert.strictEqual(pq.getResult(), false);
+
+      //since we only prepared a statement there should be
+      //0 tuples in the result
       assert.equal(pq.ntuples(), 0);
+
+      //now execute the previously prepared statement
       var success = pq.sendQueryPrepared(statementName, ['Brian']);
       assert(success, pq.errorMessage());
       assert.strictEqual(pq.flush(), 0, 'Should have flushed parameters');
       consume(pq, function() {
         assert.ifError(pq.errorMessage());
+
+        //consume the result of the query execution
         assert(pq.getResult());
         assert.equal(pq.ntuples(), 1);
         assert.equal(pq.getvalue(0, 0), 'Brian');
+
+        //call 'getResult' again to ensure we're finished
         assert.strictEqual(pq.getResult(), false);
         done();
       });
