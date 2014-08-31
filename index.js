@@ -203,3 +203,13 @@ PQ.prototype.isNonBlocking = function() {
 PQ.prototype.flush = function() {
   return this.$flush();
 };
+
+PQ.prototype.escapeLiteral = function(input) {
+  if(!input) return input;
+  return this.$escapeLiteral(input);
+};
+
+PQ.prototype.escapeIdentifier = function(input) {
+  if(!input) return input;
+  return this.$escapeIdentifier(input);
+}

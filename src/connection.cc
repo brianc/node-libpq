@@ -541,6 +541,63 @@ NAN_METHOD(Connection::Flush) {
   NanReturnValue(NanNew<v8::Number>(status));
 }
 
+NAN_METHOD(Connection::EscapeLiteral) {
+  NanScope();
+  TRACE("Connection::EscapeLiteral");
+
+  Connection* self = THIS();
+
+  v8::Local<v8::String> str = args[0]->ToString();
+  int len = str->Utf8Length() + 1;
+  char* buffer = new char[len];
+  str->WriteUtf8(buffer, len);
+
+  TRACEF("Connection::EscapeLiteral:input %s\n", buffer);
+  char* result = PQescapeLiteral(self->pq, buffer, len);
+  TRACEF("Connection::EscapeLiteral:output %s\n", result);
+
+  delete[] buffer;
+
+  if(result == NULL) {
+    NanReturnNull();
+  }
+
+  v8::Local<v8::String> toReturn = NanNew<v8::String>(result);
+
+  PQfreemem(result);
+
+  NanReturnValue(toReturn);
+}
+
+NAN_METHOD(Connection::EscapeIdentifier) {
+  NanScope();
+  TRACE("Connection::EscapeIdentifier");
+
+  Connection* self = THIS();
+
+  v8::Local<v8::String> str = args[0]->ToString();
+  int len = str->Utf8Length() + 1;
+  char* buffer = new char[len];
+  str->WriteUtf8(buffer, len);
+
+  TRACEF("Connection::EscapeIdentifier:input %s\n", buffer);
+  char* result = PQescapeIdentifier(self->pq, buffer, len);
+  TRACEF("Connection::EscapeIdentifier:output %s\n", result);
+
+  delete[] buffer;
+
+  if(result == NULL) {
+    NanReturnNull();
+  }
+
+  v8::Local<v8::String> toReturn = NanNew<v8::String>(result);
+
+  PQfreemem(result);
+
+  NanReturnValue(toReturn);
+}
+
+
 void Connection::on_io_readable(uv_poll_t* handle, int status, int revents) {
   LOG("Connection::on_io_readable");
   Connection* self = (Connection*) handle->data;

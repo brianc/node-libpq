@@ -43,6 +43,8 @@ class Connection : public node::ObjectWrap {
     static NAN_METHOD(SetNonBlocking);
     static NAN_METHOD(IsNonBlocking);
     static NAN_METHOD(Flush);
+    static NAN_METHOD(EscapeLiteral);
+    static NAN_METHOD(EscapeIdentifier);
 
   private:
     PGresult* lastResult;
