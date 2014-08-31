@@ -3,6 +3,10 @@ var PQ = module.exports = require('bindings')('addon.node').PQ;
 var EventEmitter = require('events').EventEmitter;
 var util = require('util')
 
+for(var key in EventEmitter.prototype) {
+  PQ.prototype[key] = EventEmitter.prototype[key];
+}
+
 PQ.prototype.connectSync = function(paramString) {
   if(!paramString) {
     paramString = '';
@@ -68,6 +72,10 @@ PQ.prototype.sendQuery = function(commandText) {
   return this.$sendQuery(commandText);
 };
 
+PQ.prototype.getResult = function() {
+  return this.$getResult();
+};
+
 PQ.prototype.resultStatus = function() {
   return this.$resultStatus();
 };
@@ -104,18 +112,19 @@ PQ.prototype.getisnull = function(row, col) {
   return this.$getisnull(row, col);
 };
 
-PQ.prototype.read = function(cb) {
-  //return this.$read(cb);
-  if(!this._socket) {
-    var net = require('net')
-    this._socket = new net.Socket({fd: this.socket()});
-  }
-  var self = this;
-  this._socket.ref();
-  this._socket.once('readable', function() {
-    self._socket.unref();
-    cb();
-  });
+//calls libuv's "select" on the connection's socket
+//once the socket becomes readable, the callback is called
+//once and only once.  After the connection becomes readable
+//the socket is suspended again immediately so another PQ#read
+//must be called to receive more data
+PQ.prototype.readable = function(cb) {
+  this.$startRead();
+  return this.once('readable', cb);
+};
+
+PQ.prototype.writable = function(cb) {
+  this.$startWrite();
+  return this.once('writable', cb);
 };
 
 //returns boolean - false indicates an error condition
@@ -126,7 +135,7 @@ PQ.prototype.consumeInput = function() {
 
 //returns true if PQ#getResult would cause
 //the process to block waiting on results
-//false indicates PQ$getResult can be called
+//false indicates PQ#getResult can be called
 //with an assurance of not blocking
 PQ.prototype.isBusy = function() {
   return this.$isBusy();

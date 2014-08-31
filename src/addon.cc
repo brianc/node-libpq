@@ -383,6 +383,21 @@ class Connection : public node::ObjectWrap {
       NanReturnValue(success == 1 ? NanTrue() : NanFalse());
     }
 
+    static NAN_METHOD(GetResult) {
+      NanScope();
+      TRACE("Connection::GetResult");
+
+      Connection *self = THIS();
+      PGresult *result = PQgetResult(self->pq);
+
+      if(result == NULL) {
+        NanReturnValue(NanFalse());
+      }
+
+      self->SetLastResult(result);
+      NanReturnValue(NanTrue());
+    }
+
     static NAN_METHOD(ConsumeInput) {
       NanScope();
       TRACE("Connection::ConsumeInput");
@@ -395,7 +410,7 @@ class Connection : public node::ObjectWrap {
 
     static NAN_METHOD(IsBusy) {
       NanScope();
-      TRACE("Connection:IsBusy");
+      TRACE("Connection::IsBusy");
 
       Connection *self = THIS();
 
@@ -436,6 +451,7 @@ class Connection : public node::ObjectWrap {
       LOG("Readable!");
       Connection* self = (Connection*) handle->data;
       self->ReadStop();
+      self->Emit("readable");
     }
 
     static void on_io_writable(uv_poll_t* handle, int status, int revents) {
@@ -504,6 +520,22 @@ class Connection : public node::ObjectWrap {
       }
       delete [] array;
     }
+
+    void Emit(const char* message) {
+      NanScope();
+
+      v8::Local<v8::Value> emit_v = NanObjectWrapHandle(this)->Get(NanNew<v8::String>("emit"));
+      assert(emit_v->IsFunction());
+      v8::Local<v8::Function> emit_f = emit_v.As<v8::Function>();
+
+      v8::Handle<v8::Value> args[1] = { v8::String::New(message) };
+
+      v8::TryCatch tc;
+      emit_f->Call(NanObjectWrapHandle(this), 1, args);
+      if(tc.HasCaught()) {
+        node::FatalException(tc);
+      }
+    }
 };
 
 
@@ -530,12 +562,13 @@ void InitAddon(Handle<Object> exports) {
 
   //async query functions
   NODE_SET_PROTOTYPE_METHOD(tpl, "$sendQuery", Connection::SendQuery);
-  NODE_SET_PROTOTYPE_METHOD(tpl, "$consumeInput", Connection::ConsumeInput);
-  NODE_SET_PROTOTYPE_METHOD(tpl, "$isBusy", Connection::IsBusy);
+  NODE_SET_PROTOTYPE_METHOD(tpl, "$getResult", Connection::GetResult);
 
-  //async control functions
+  //async i/o control functions
   NODE_SET_PROTOTYPE_METHOD(tpl, "$startRead", Connection::StartRead);
   NODE_SET_PROTOTYPE_METHOD(tpl, "$stopRead", Connection::StopRead);
+  NODE_SET_PROTOTYPE_METHOD(tpl, "$consumeInput", Connection::ConsumeInput);
+  NODE_SET_PROTOTYPE_METHOD(tpl, "$isBusy", Connection::IsBusy);
 
   //result accessor functions
   NODE_SET_PROTOTYPE_METHOD(tpl, "$clear", Connection::Clear);
