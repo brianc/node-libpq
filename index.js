@@ -72,6 +72,16 @@ PQ.prototype.sendQuery = function(commandText) {
   return this.$sendQuery(commandText);
 };
 
+PQ.prototype.sendQueryParams = function(commandText, parameters) {
+  if(!commandText) {
+    commandText = '';
+  }
+  if(!parameters) {
+    parameters = [];
+  }
+  return this.$sendQueryParams(commandText, parameters);
+};
+
 PQ.prototype.getResult = function() {
   return this.$getResult();
 };
@@ -139,6 +149,21 @@ PQ.prototype.consumeInput = function() {
 //with an assurance of not blocking
 PQ.prototype.isBusy = function() {
   return this.$isBusy();
+};
+
+PQ.prototype.setNonBlocking = function(truthy) {
+  return this.$setNonBlocking(truthy ? 1 : 0);
+};
+
+PQ.prototype.isNonBlocking = function() {
+  return this.$isNonBlocking();
+};
+
+//returns 1 if socket is not write-ready
+//returns 0 if all data flushed to socket
+//returns -1 if there is an error
+PQ.prototype.flush = function() {
+  return this.$flush();
 };
 
 PQ.prototype.test = function() {

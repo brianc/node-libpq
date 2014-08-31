@@ -81,7 +81,7 @@ class Connection : public node::ObjectWrap {
 
       int fd = PQsocket(self->pq);
       uv_poll_init(uv_default_loop(), &(self->read_watcher), fd);
-      //uv_poll_init(uv_default_loop(), &(self->write_watcher), fd);
+      uv_poll_init(uv_default_loop(), &(self->write_watcher), fd);
 
       //start reading to keep the event loop alive
       //self->ReadStart();
@@ -145,7 +145,6 @@ class Connection : public node::ObjectWrap {
       Connection *self = THIS();
 
       char* commandText = NewCString(args[0]);
-
       TRACEF("Connection::Exec: %s\n", commandText);
 
       v8::Local<v8::Array> jsParams = v8::Local<v8::Array>::Cast(args[1]);
@@ -383,6 +382,37 @@ class Connection : public node::ObjectWrap {
       NanReturnValue(success == 1 ? NanTrue() : NanFalse());
     }
 
+    static NAN_METHOD(SendQueryParams) {
+      NanScope();
+      TRACE("Connection::SendQueryParams");
+
+      Connection *self = THIS();
+
+      char* commandText = NewCString(args[0]);
+      TRACEF("Connection::SendQueryParams: %s\n", commandText);
+
+      v8::Local<v8::Array> jsParams = v8::Local<v8::Array>::Cast(args[1]);
+
+      int numberOfParams = jsParams->Length();
+      char** parameters = NewCStringArray(jsParams);
+
+      int success = PQsendQueryParams(
+          self->pq,
+          commandText,
+          numberOfParams,
+          NULL, //const Oid* paramTypes[],
+          parameters, //const char* const* paramValues[]
+          NULL, //const int* paramLengths[]
+          NULL, //const int* paramFormats[],
+          0 //result format of text
+          );
+
+      delete[] commandText;
+      DeleteCStringArray(parameters, numberOfParams);
+
+      NanReturnValue(success == 1 ? NanTrue() : NanFalse());
+    }
+
     static NAN_METHOD(GetResult) {
       NanScope();
       TRACE("Connection::GetResult");
@@ -430,15 +460,48 @@ class Connection : public node::ObjectWrap {
       NanReturnUndefined();
     }
 
-    static NAN_METHOD(StopRead) {
+    static NAN_METHOD(StartWrite) {
       NanScope();
-      TRACE("Connection::StopRead");
+      TRACE("Connection::StartWrite");
 
       Connection* self = THIS();
 
-      self->ReadStop();
+      self->WriteStart();
 
       NanReturnUndefined();
+    }
+
+    static NAN_METHOD(SetNonBlocking) {
+      NanScope();
+      TRACE("Connection::SetNonBlocking");
+
+      Connection* self = THIS();
+
+      int ok = PQsetnonblocking(self->pq, args[0]->Int32Value());
+
+      NanReturnValue(ok == 0 ? NanTrue() : NanFalse());
+    }
+
+    static NAN_METHOD(IsNonBlocking) {
+      NanScope();
+      TRACE("Connection::IsNonBlocking");
+
+      Connection* self = THIS();
+
+      int status = PQisnonblocking(self->pq);
+
+      NanReturnValue(status == 1 ? NanTrue() : NanFalse());
+    }
+
+    static NAN_METHOD(Flush) {
+      NanScope();
+      TRACE("Connection::Flush");
+
+      Connection* self = THIS();
+
+      int status = PQflush(self->pq);
+
+      NanReturnValue(NanNew<v8::Number>(status));
     }
 
   private:
@@ -448,14 +511,17 @@ class Connection : public node::ObjectWrap {
     uv_poll_t write_watcher;
 
     static void on_io_readable(uv_poll_t* handle, int status, int revents) {
-      LOG("Readable!");
+      LOG("Connection::on_io_readable");
       Connection* self = (Connection*) handle->data;
       self->ReadStop();
       self->Emit("readable");
     }
 
     static void on_io_writable(uv_poll_t* handle, int status, int revents) {
-      LOG("Writable!!");
+      LOG("Connection::on_io_writable");
+      Connection* self = (Connection*) handle->data;
+      self->WriteStop();
+      self->Emit("writable");
     }
 
     void ReadStart() {
@@ -468,6 +534,18 @@ class Connection : public node::ObjectWrap {
       LOG("Connection::ReadStop:stoping read watcher");
       uv_poll_stop(&read_watcher);
     }
+
+    void WriteStart() {
+      LOG("Connection::WriteStart:starting read watcher")
+      uv_poll_start(&write_watcher, UV_WRITABLE, on_io_writable);
+      LOG("Connection::WriteStart:started read watcher");
+    }
+
+    void WriteStop() {
+      LOG("Connection::WriteStop:stoping read watcher");
+      uv_poll_stop(&write_watcher);
+    }
+
 
     void ClearLastResult() {
       LOG("Connection::ClearLastResult");
@@ -562,13 +640,17 @@ void InitAddon(Handle<Object> exports) {
 
   //async query functions
   NODE_SET_PROTOTYPE_METHOD(tpl, "$sendQuery", Connection::SendQuery);
+  NODE_SET_PROTOTYPE_METHOD(tpl, "$sendQueryParams", Connection::SendQueryParams);
   NODE_SET_PROTOTYPE_METHOD(tpl, "$getResult", Connection::GetResult);
 
   //async i/o control functions
   NODE_SET_PROTOTYPE_METHOD(tpl, "$startRead", Connection::StartRead);
-  NODE_SET_PROTOTYPE_METHOD(tpl, "$stopRead", Connection::StopRead);
+  NODE_SET_PROTOTYPE_METHOD(tpl, "$startWrite", Connection::StartWrite);
   NODE_SET_PROTOTYPE_METHOD(tpl, "$consumeInput", Connection::ConsumeInput);
   NODE_SET_PROTOTYPE_METHOD(tpl, "$isBusy", Connection::IsBusy);
+  NODE_SET_PROTOTYPE_METHOD(tpl, "$setNonBlocking", Connection::SetNonBlocking);
+  NODE_SET_PROTOTYPE_METHOD(tpl, "$isNonBlocking", Connection::IsNonBlocking);
+  NODE_SET_PROTOTYPE_METHOD(tpl, "$flush", Connection::Flush);
 
   //result accessor functions
   NODE_SET_PROTOTYPE_METHOD(tpl, "$clear", Connection::Clear);
