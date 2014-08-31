@@ -23,6 +23,8 @@ void InitAddon(v8::Handle<v8::Object> exports) {
   //async query functions
   NODE_SET_PROTOTYPE_METHOD(tpl, "$sendQuery", Connection::SendQuery);
   NODE_SET_PROTOTYPE_METHOD(tpl, "$sendQueryParams", Connection::SendQueryParams);
+  NODE_SET_PROTOTYPE_METHOD(tpl, "$sendPrepare", Connection::SendPrepare);
+  NODE_SET_PROTOTYPE_METHOD(tpl, "$sendQueryPrepared", Connection::SendQueryPrepared);
   NODE_SET_PROTOTYPE_METHOD(tpl, "$getResult", Connection::GetResult);
 
   //async i/o control functions

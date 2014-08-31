@@ -393,6 +393,62 @@ NAN_METHOD(Connection::SendQueryParams) {
   NanReturnValue(success == 1 ? NanTrue() : NanFalse());
 }
 
+NAN_METHOD(Connection::SendPrepare) {
+  NanScope();
+  TRACE("Connection::SendPrepare");
+
+  Connection *self = THIS();
+
+  char* statementName = NewCString(args[0]);
+  char* commandText = NewCString(args[1]);
+  int numberOfParams = args[2]->Int32Value();
+
+  TRACEF("Connection::SendPrepare: %s\n", statementName);
+  int success = PQsendPrepare(
+      self->pq,
+      statementName,
+      commandText,
+      numberOfParams,
+      NULL //const Oid* paramTypes
+      );
+
+
+  delete[] statementName;
+  delete[] commandText;
+
+  NanReturnValue(success == 1 ? NanTrue() : NanFalse());
+}
+
+NAN_METHOD(Connection::SendQueryPrepared) {
+  NanScope();
+  TRACE("Connection::SendQueryPrepared");
+
+  Connection *self = THIS();
+
+  char* statementName = NewCString(args[0]);
+  TRACEF("Connection::SendQueryPrepared: %s\n", statementName);
+
+  v8::Local<v8::Array> jsParams = v8::Local<v8::Array>::Cast(args[1]);
+
+  int numberOfParams = jsParams->Length();
+  char** parameters = NewCStringArray(jsParams);
+
+  int success = PQsendQueryPrepared(
+      self->pq,
+      statementName,
+      numberOfParams,
+      parameters, //const char* const* paramValues[]
+      NULL, //const int* paramLengths[]
+      NULL, //const int* paramFormats[],
+      0 //result format of text
+      );
+
+  delete[] statementName;
+  DeleteCStringArray(parameters, numberOfParams);
+
+  NanReturnValue(success == 1 ? NanTrue() : NanFalse());
+}
+
 NAN_METHOD(Connection::GetResult) {
   NanScope();
   TRACE("Connection::GetResult");
@@ -425,6 +481,7 @@ NAN_METHOD(Connection::IsBusy) {
   Connection *self = THIS();
 
   int isBusy = PQisBusy(self->pq);
+  TRACEF("Connection::IsBusy: %d\n", isBusy);
 
   NanReturnValue(isBusy == 1 ? NanTrue() : NanFalse());
 }

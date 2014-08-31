@@ -45,4 +45,29 @@ describe('async simple query', function() {
       done();
     })
   });
+
+  it('dispatches named query', function(done) {
+    var pq = this.pq;
+    var statementName = 'async-get-name';
+    var success = pq.sendPrepare(statementName, 'SELECT $1::text as name', 1);
+    assert(success, pq.errorMessage());
+    assert.strictEqual(pq.flush(), 0, 'Should have flushed query text');
+    consume(pq, function() {
+      assert.ifError(pq.errorMessage());
+      assert(pq.getResult());
+      assert.strictEqual(pq.getResult(), false);
+      assert.equal(pq.ntuples(), 0);
+      var success = pq.sendQueryPrepared(statementName, ['Brian']);
+      assert(success, pq.errorMessage());
+      assert.strictEqual(pq.flush(), 0, 'Should have flushed parameters');
+      consume(pq, function() {
+        assert.ifError(pq.errorMessage());
+        assert(pq.getResult());
+        assert.equal(pq.ntuples(), 1);
+        assert.equal(pq.getvalue(0, 0), 'Brian');
+        assert.strictEqual(pq.getResult(), false);
+        done();
+      });
+    });
+  });
 });

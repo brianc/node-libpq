@@ -60,6 +60,10 @@ PQ.prototype.execParams = function(commandText, parameters) {
 };
 
 PQ.prototype.prepare = function(statementName, commandText, nParams) {
+  assert.equal(arguments.length, 3, 'Must supply 3 arguments');
+  if(!statementName) {
+    statementName = '';
+  }
   if(!commandText) {
     commandText = '';
   }
@@ -92,6 +96,28 @@ PQ.prototype.sendQueryParams = function(commandText, parameters) {
     parameters = [];
   }
   return this.$sendQueryParams(commandText, parameters);
+};
+
+PQ.prototype.sendPrepare = function(statementName, commandText, nParams) {
+  assert.equal(arguments.length, 3, 'Must supply 3 arguments');
+  if(!statementName) {
+    statementName = '';
+  }
+  if(!commandText) {
+    commandText = '';
+  }
+  nParams = Number(nParams) || 0;
+  return this.$sendPrepare(statementName, commandText, nParams);
+};
+
+PQ.prototype.sendQueryPrepared = function(statementName, parameters) {
+  if(!statementName) {
+    statementName = '';
+  }
+  if(!parameters) {
+    parameters = [];
+  }
+  return this.$sendQueryPrepared(statementName, parameters);
 };
 
 PQ.prototype.getResult = function() {

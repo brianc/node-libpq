@@ -33,6 +33,8 @@ class Connection : public node::ObjectWrap {
     static NAN_METHOD(ResultErrorMessage);
     static NAN_METHOD(SendQuery);
     static NAN_METHOD(SendQueryParams);
+    static NAN_METHOD(SendPrepare);
+    static NAN_METHOD(SendQueryPrepared);
     static NAN_METHOD(GetResult);
     static NAN_METHOD(ConsumeInput);
     static NAN_METHOD(IsBusy);
