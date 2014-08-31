@@ -10,8 +10,16 @@ PQ.prototype.connectSync = function(paramString) {
   var connected = this.$connectSync(paramString);
   if(!connected) {
     this.finish();
-    throw new Error(this.$getLastErrorMessage());
+    throw new Error(this.errorMessage());
   }
+};
+
+PQ.prototype.errorMessage = function() {
+  return this.$getLastErrorMessage();
+};
+
+PQ.prototype.socket = function() {
+  return this.$socket();
 };
 
 PQ.prototype.finish = function() {
@@ -51,7 +59,14 @@ PQ.prototype.execPrepared = function(statementName, parameters) {
     parameters = [];
   }
   this.$execPrepared(statementName, parameters);
-}
+};
+
+PQ.prototype.sendQuery = function(commandText) {
+  if(!commandText) {
+    commandText = '';
+  }
+  return this.$sendQuery(commandText);
+};
 
 PQ.prototype.resultStatus = function() {
   return this.$resultStatus();
@@ -87,4 +102,40 @@ PQ.prototype.getvalue = function(row, col) {
 
 PQ.prototype.getisnull = function(row, col) {
   return this.$getisnull(row, col);
+};
+
+PQ.prototype.read = function(cb) {
+  //return this.$read(cb);
+  if(!this._socket) {
+    var net = require('net')
+    this._socket = new net.Socket({fd: this.socket()});
+  }
+  var self = this;
+  this._socket.ref();
+  this._socket.once('readable', function() {
+    self._socket.unref();
+    cb();
+  });
+};
+
+//returns boolean - false indicates an error condition
+//e.g. a failure to consume input
+PQ.prototype.consumeInput = function() {
+  return this.$consumeInput();
+};
+
+//returns true if PQ#getResult would cause
+//the process to block waiting on results
+//false indicates PQ$getResult can be called
+//with an assurance of not blocking
+PQ.prototype.isBusy = function() {
+  return this.$isBusy();
+};
+
+PQ.prototype.test = function() {
+  this.$test();
+};
+
+PQ.prototype.callback = function() {
+  console.log('called!');
 };

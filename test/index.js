@@ -6,3 +6,10 @@ describe('connecting', function() {
     client.connectSync();
   });
 });
+
+describe('callbacks', function() {
+  it('works', function() {
+    var client = new Client();
+    client.test();
+  })
+});

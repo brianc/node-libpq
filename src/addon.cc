@@ -77,15 +77,10 @@ class Connection : public node::ObjectWrap {
         NanReturnValue(NanFalse());
       }
 
-      int fd = PQsocket(self->pq);
-
-      if(fd < 0) {
-        NanReturnValue(NanFalse());
-      }
-
       //self->Ref();
 
-      //uv_poll_init(uv_default_loop(), &(self->read_watcher), fd);
+      int fd = PQsocket(self->pq);
+      uv_poll_init(uv_default_loop(), &(self->read_watcher), fd);
       //uv_poll_init(uv_default_loop(), &(self->write_watcher), fd);
 
       //start reading to keep the event loop alive
@@ -93,6 +88,17 @@ class Connection : public node::ObjectWrap {
 
       TRACE("Connection::ConnectSync::Success");
       NanReturnValue(NanTrue());
+    }
+
+    static NAN_METHOD(Socket) {
+      NanScope();
+      TRACE("Connection::Socket");
+
+      Connection *self = THIS();
+      int fd = PQsocket(self->pq);
+      TRACEF("Connection::Socket::fd: %d\n", fd);
+
+      NanReturnValue(NanNew<v8::Number>(fd));
     }
 
     static NAN_METHOD(GetLastErrorMessage) {
@@ -106,12 +112,13 @@ class Connection : public node::ObjectWrap {
 
     static NAN_METHOD(Finish) {
       NanScope();
-      TRACE("Connection::Finish::finish")
+      TRACE("Connection::Finish::finish");
 
-        Connection *self = THIS();
+      Connection *self = THIS();
 
       self->ClearLastResult();
       PQfinish(self->pq);
+      self->pq = NULL;
 
       NanReturnUndefined();
     }
@@ -351,6 +358,74 @@ class Connection : public node::ObjectWrap {
       NanReturnValue(NanNew<v8::String>(status));
     }
 
+    static NAN_METHOD(Test) {
+      NanScope();
+
+      TRACE("Connection::Test");
+
+      NanMakeCallback(args.This(), "callback", 0, NULL);
+
+      NanReturnUndefined();
+    }
+
+    static NAN_METHOD(SendQuery) {
+      NanScope();
+      TRACE("Connection::SendQuery");
+
+      Connection *self = THIS();
+      char* commandText = NewCString(args[0]);
+
+      TRACEF("Connection::SendQuery: %s\n", commandText);
+      int success = PQsendQuery(self->pq, commandText);
+
+      delete[] commandText;
+
+      NanReturnValue(success == 1 ? NanTrue() : NanFalse());
+    }
+
+    static NAN_METHOD(ConsumeInput) {
+      NanScope();
+      TRACE("Connection::ConsumeInput");
+
+      Connection *self = THIS();
+
+      int success = PQconsumeInput(self->pq);
+      NanReturnValue(success == 1 ? NanTrue() : NanFalse());
+    }
+
+    static NAN_METHOD(IsBusy) {
+      NanScope();
+      TRACE("Connection:IsBusy");
+
+      Connection *self = THIS();
+
+      int isBusy = PQisBusy(self->pq);
+
+      NanReturnValue(isBusy == 1 ? NanTrue() : NanFalse());
+    }
+
+    static NAN_METHOD(StartRead) {
+      NanScope();
+      TRACE("Connection::StartRead");
+
+      Connection* self = THIS();
+
+      self->ReadStart();
+
+      NanReturnUndefined();
+    }
+
+    static NAN_METHOD(StopRead) {
+      NanScope();
+      TRACE("Connection::StopRead");
+
+      Connection* self = THIS();
+
+      self->ReadStop();
+
+      NanReturnUndefined();
+    }
+
   private:
     PGconn* pq;
     PGresult* lastResult;
@@ -359,6 +434,8 @@ class Connection : public node::ObjectWrap {
 
     static void on_io_readable(uv_poll_t* handle, int status, int revents) {
       LOG("Readable!");
+      Connection* self = (Connection*) handle->data;
+      self->ReadStop();
     }
 
     static void on_io_writable(uv_poll_t* handle, int status, int revents) {
@@ -366,10 +443,13 @@ class Connection : public node::ObjectWrap {
     }
 
     void ReadStart() {
+      LOG("Connection::ReadStart:starting read watcher")
       uv_poll_start(&read_watcher, UV_READABLE, on_io_readable);
+      LOG("Connection::ReadStart:started read watcher");
     }
 
     void ReadStop() {
+      LOG("Connection::ReadStop:stoping read watcher");
       uv_poll_stop(&read_watcher);
     }
 
@@ -434,16 +514,28 @@ void InitAddon(Handle<Object> exports) {
   tpl->SetClassName(NanNew("PQ"));
   tpl->InstanceTemplate()->SetInternalFieldCount(1);
 
+  NODE_SET_PROTOTYPE_METHOD(tpl, "$test", Connection::Test);
+
   //connection initialization & management functions
   NODE_SET_PROTOTYPE_METHOD(tpl, "$connectSync", Connection::ConnectSync);
   NODE_SET_PROTOTYPE_METHOD(tpl, "$finish", Connection::Finish);
   NODE_SET_PROTOTYPE_METHOD(tpl, "$getLastErrorMessage", Connection::GetLastErrorMessage);
+  NODE_SET_PROTOTYPE_METHOD(tpl, "$socket", Connection::Socket);
 
   //sync query functions
   NODE_SET_PROTOTYPE_METHOD(tpl, "$exec", Connection::Exec);
   NODE_SET_PROTOTYPE_METHOD(tpl, "$execParams", Connection::ExecParams);
   NODE_SET_PROTOTYPE_METHOD(tpl, "$prepare", Connection::Prepare);
   NODE_SET_PROTOTYPE_METHOD(tpl, "$execPrepared", Connection::ExecPrepared);
+
+  //async query functions
+  NODE_SET_PROTOTYPE_METHOD(tpl, "$sendQuery", Connection::SendQuery);
+  NODE_SET_PROTOTYPE_METHOD(tpl, "$consumeInput", Connection::ConsumeInput);
+  NODE_SET_PROTOTYPE_METHOD(tpl, "$isBusy", Connection::IsBusy);
+
+  //async control functions
+  NODE_SET_PROTOTYPE_METHOD(tpl, "$startRead", Connection::StartRead);
+  NODE_SET_PROTOTYPE_METHOD(tpl, "$stopRead", Connection::StopRead);
 
   //result accessor functions
   NODE_SET_PROTOTYPE_METHOD(tpl, "$clear", Connection::Clear);
