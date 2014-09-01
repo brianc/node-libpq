@@ -29,6 +29,7 @@ void InitAddon(v8::Handle<v8::Object> exports) {
 
   //async i/o control functions
   NODE_SET_PROTOTYPE_METHOD(tpl, "$startRead", Connection::StartRead);
+  NODE_SET_PROTOTYPE_METHOD(tpl, "$stopRead", Connection::StopRead);
   NODE_SET_PROTOTYPE_METHOD(tpl, "$startWrite", Connection::StartWrite);
   NODE_SET_PROTOTYPE_METHOD(tpl, "$consumeInput", Connection::ConsumeInput);
   NODE_SET_PROTOTYPE_METHOD(tpl, "$isBusy", Connection::IsBusy);

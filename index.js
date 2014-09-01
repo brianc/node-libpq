@@ -166,8 +166,17 @@ PQ.prototype.getisnull = function(row, col) {
 //the socket is suspended again immediately so another PQ#read
 //must be called to receive more data
 PQ.prototype.readable = function(cb) {
+  throw new Error('Not implemented')
   this.$startRead();
   return this.once('readable', cb);
+};
+
+PQ.prototype.startReader = function() {
+  this.$startRead();
+};
+
+PQ.prototype.stopReader = function() {
+  this.$stopRead();
 };
 
 PQ.prototype.writable = function(cb) {

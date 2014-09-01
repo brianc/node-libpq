@@ -39,6 +39,7 @@ class Connection : public node::ObjectWrap {
     static NAN_METHOD(ConsumeInput);
     static NAN_METHOD(IsBusy);
     static NAN_METHOD(StartRead);
+    static NAN_METHOD(StopRead);
     static NAN_METHOD(StartWrite);
     static NAN_METHOD(SetNonBlocking);
     static NAN_METHOD(IsNonBlocking);

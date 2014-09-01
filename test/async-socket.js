@@ -4,10 +4,18 @@ var assert = require('assert');
 
 var consume = function(pq, cb) {
   if(!pq.isBusy()) return cb();
-  pq.readable(function() {
+  pq.startReader();
+  var onReadable = function() {
     assert(pq.consumeInput(), pq.errorMessage());
-    return consume(pq, cb);
-  });
+    if(pq.isBusy()) {
+      console.log('consuming a 2nd buffer of input later...')
+      return;
+    }
+    pq.removeListener('readable', onReadable);
+    pq.stopReader();
+    cb();
+  }
+  pq.on('readable', onReadable);
 }
 
 describe('async simple query', function() {

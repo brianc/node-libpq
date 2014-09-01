@@ -497,6 +497,17 @@ NAN_METHOD(Connection::StartRead) {
   NanReturnUndefined();
 }
 
+NAN_METHOD(Connection::StopRead) {
+  NanScope();
+  TRACE("Connection::StopRead");
+
+  Connection* self = THIS();
+
+  self->ReadStop();
+
+  NanReturnUndefined();
+}
+
 NAN_METHOD(Connection::StartWrite) {
   NanScope();
   TRACE("Connection::StartWrite");
@@ -600,37 +611,47 @@ NAN_METHOD(Connection::EscapeIdentifier) {
 
 void Connection::on_io_readable(uv_poll_t* handle, int status, int revents) {
   LOG("Connection::on_io_readable");
-  Connection* self = (Connection*) handle->data;
-  self->ReadStop();
-  self->Emit("readable");
+  TRACEF("Connection::on_io_readable:status %d\n", status);
+  TRACEF("Connection::on_io_readable:revents %d\n", revents);
+  if(revents & UV_READABLE) {
+    LOG("Connection::on_io_readable UV_READABLE");
+    Connection* self = (Connection*) handle->data;
+    self->Emit("readable");
+  }
 }
 
 void Connection::on_io_writable(uv_poll_t* handle, int status, int revents) {
   LOG("Connection::on_io_writable");
-  Connection* self = (Connection*) handle->data;
-  self->WriteStop();
-  self->Emit("writable");
+  TRACEF("Connection::on_io_writable:status %d\n", status);
+  TRACEF("Connection::on_io_writable:revents %d\n", revents);
+  if(revents & UV_WRITABLE) {
+    LOG("Connection::on_io_readable UV_WRITABLE");
+    Connection* self = (Connection*) handle->data;
+    self->WriteStop();
+    self->Emit("writable");
+  }
 }
 
 void Connection::ReadStart() {
-  LOG("Connection::ReadStart:starting read watcher")
-    uv_poll_start(&read_watcher, UV_READABLE, on_io_readable);
+  LOG("Connection::ReadStart:starting read watcher");
+  uv_poll_start(&read_watcher, UV_READABLE, on_io_readable);
   LOG("Connection::ReadStart:started read watcher");
 }
 
 void Connection::ReadStop() {
   LOG("Connection::ReadStop:stoping read watcher");
   uv_poll_stop(&read_watcher);
+  LOG("Connection::ReadStop:stopped read watcher");
 }
 
 void Connection::WriteStart() {
-  LOG("Connection::WriteStart:starting read watcher")
-    uv_poll_start(&write_watcher, UV_WRITABLE, on_io_writable);
-  LOG("Connection::WriteStart:started read watcher");
+  LOG("Connection::WriteStart:starting write watcher");
+  uv_poll_start(&write_watcher, UV_WRITABLE, on_io_writable);
+  LOG("Connection::WriteStart:started write watcher");
 }
 
 void Connection::WriteStop() {
-  LOG("Connection::WriteStop:stoping read watcher");
+  LOG("Connection::WriteStop:stoping write watcher");
   uv_poll_stop(&write_watcher);
 }
 

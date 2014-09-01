@@ -21,6 +21,7 @@
     "bindings": "^1.2.1"
   },
   "devDependencies": {
-    "mocha": "^1.21.4"
+    "mocha": "^1.21.4",
+    "okay": "^0.3.0"
   }
 }
