@@ -7,6 +7,8 @@ for(var key in EventEmitter.prototype) {
   PQ.prototype[key] = EventEmitter.prototype[key];
 }
 
+//SYNC connects to the server
+//throws an exception in the event of a connection error
 PQ.prototype.connectSync = function(paramString) {
   if(!paramString) {
     paramString = '';
@@ -18,6 +20,8 @@ PQ.prototype.connectSync = function(paramString) {
   }
 };
 
+//connects async using a background thread
+//calls the callback with an error if there was one
 PQ.prototype.connect = function(paramString, cb) {
   if(typeof paramString == 'function') {
     cb = paramString;
@@ -34,14 +38,21 @@ PQ.prototype.errorMessage = function() {
   return this.$getLastErrorMessage();
 };
 
+//returns an int for the fd of the socket
 PQ.prototype.socket = function() {
   return this.$socket();
 };
 
+//finishes the connection & closes it
 PQ.prototype.finish = function() {
   this.$finish();
 };
 
+////SYNC executes a plain text query
+//immediately stores the results within the PQ object for consumption with
+//ntuples, getvalue, etc...
+//returns false if there was an error
+//consume additional error details via PQ#errorMessage & friends
 PQ.prototype.exec = function(commandText) {
   if(!commandText) {
     commandText = '';
@@ -49,6 +60,11 @@ PQ.prototype.exec = function(commandText) {
   this.$exec(commandText);
 };
 
+//SYNC executes a query with parameters
+//immediately stores the results within the PQ object for consumption with
+//ntuples, getvalue, etc...
+//returns false if there was an error
+//consume additional error details via PQ#errorMessage & friends
 PQ.prototype.execParams = function(commandText, parameters) {
   if(!commandText) {
     commandText = '';
@@ -59,6 +75,11 @@ PQ.prototype.execParams = function(commandText, parameters) {
   this.$execParams(commandText, parameters);
 };
 
+//SYNC prepares a named query and stores the result
+//immediately stores the results within the PQ object for consumption with
+//ntuples, getvalue, etc...
+//returns false if there was an error
+//consume additional error details via PQ#errorMessage & friends
 PQ.prototype.prepare = function(statementName, commandText, nParams) {
   assert.equal(arguments.length, 3, 'Must supply 3 arguments');
   if(!statementName) {
@@ -71,6 +92,11 @@ PQ.prototype.prepare = function(statementName, commandText, nParams) {
   this.$prepare(statementName, commandText, nParams);
 };
 
+//SYNC executes a named, prepared query and stores the result
+//immediately stores the results within the PQ object for consumption with
+//ntuples, getvalue, etc...
+//returns false if there was an error
+//consume additional error details via PQ#errorMessage & friends
 PQ.prototype.execPrepared = function(statementName, parameters) {
   if(!statementName) {
     statementName = '';
@@ -81,6 +107,8 @@ PQ.prototype.execPrepared = function(statementName, parameters) {
   this.$execPrepared(statementName, parameters);
 };
 
+//send a command to begin executing a query in async mode
+//returns true if sent, or false if there was a send failure
 PQ.prototype.sendQuery = function(commandText) {
   if(!commandText) {
     commandText = '';
@@ -88,6 +116,8 @@ PQ.prototype.sendQuery = function(commandText) {
   return this.$sendQuery(commandText);
 };
 
+//send a command to begin executing a query with parameters in async mode
+//returns true if sent, or false if there was a send failure
 PQ.prototype.sendQueryParams = function(commandText, parameters) {
   if(!commandText) {
     commandText = '';
@@ -98,6 +128,8 @@ PQ.prototype.sendQueryParams = function(commandText, parameters) {
   return this.$sendQueryParams(commandText, parameters);
 };
 
+//send a command to prepare a named query in async mode
+//returns true if sent, or false if there was a send failure
 PQ.prototype.sendPrepare = function(statementName, commandText, nParams) {
   assert.equal(arguments.length, 3, 'Must supply 3 arguments');
   if(!statementName) {
@@ -110,6 +142,8 @@ PQ.prototype.sendPrepare = function(statementName, commandText, nParams) {
   return this.$sendPrepare(statementName, commandText, nParams);
 };
 
+//send a command to execute a named query in async mode
+//returns true if sent, or false if there was a send failure
 PQ.prototype.sendQueryPrepared = function(statementName, parameters) {
   if(!statementName) {
     statementName = '';
@@ -120,10 +154,19 @@ PQ.prototype.sendQueryPrepared = function(statementName, parameters) {
   return this.$sendQueryPrepared(statementName, parameters);
 };
 
+//'pops' a result out of the buffered
+//response data read during async command execution
+//and stores it on the c/c++ object so you can consume
+//the data from it.  returns true if there was a pending result
+//or false if there was no pending result. if there was no pending result
+//the last found result is not overwritten so you can call getResult as many
+//times as you want, and you'll always have the last available result for consumption
 PQ.prototype.getResult = function() {
   return this.$getResult();
 };
 
+//returns a text of the enum associated with the result
+//usually just PGRES_COMMAND_OK or PGRES_FATAL_ERROR
 PQ.prototype.resultStatus = function() {
   return this.$resultStatus();
 };
@@ -132,49 +175,57 @@ PQ.prototype.resultErrorMessage = function() {
   return this.$resultErrorMessage();
 };
 
+//free the memory associated with a result
+//this is somewhat handled for you within the c/c++ code
+//by never allowing the code to 'leak' a result. still,
+//if you absolutely want to free it yourself, you can use this.
 PQ.prototype.clear = function() {
   this.$clear();
 };
 
+//returns the number of tuples (rows) in the result set
 PQ.prototype.ntuples = function() {
   return this.$ntuples();
 };
 
+//returns the number of fields (columns) in the result set
 PQ.prototype.nfields = function() {
   return this.$nfields();
 };
 
-PQ.prototype.fname = function() {
-  return this.$fname();
+//returns the name of the field (column) at the given offset
+PQ.prototype.fname = function(offset) {
+  return this.$fname(offset);
 };
 
-PQ.prototype.ftype = function() {
-  return this.$ftype();
+//returns the Oid of the type for the given field
+PQ.prototype.ftype = function(offset) {
+  return this.$ftype(offset);
 };
 
+//returns a text value at the given row/col
+//if the value is null this still returns empty string
+//so you need to use PQ#getisnull to determine
 PQ.prototype.getvalue = function(row, col) {
   return this.$getvalue(row, col);
 };
 
+//returns true/false if the value is null
 PQ.prototype.getisnull = function(row, col) {
   return this.$getisnull(row, col);
 };
 
-//calls libuv's "select" on the connection's socket
-//once the socket becomes readable, the callback is called
-//once and only once.  After the connection becomes readable
-//the socket is suspended again immediately so another PQ#read
-//must be called to receive more data
-PQ.prototype.readable = function(cb) {
-  throw new Error('Not implemented')
-  this.$startRead();
-  return this.once('readable', cb);
-};
-
+//starts the 'read ready' libuv socket listener.
+//Once the socket becomes readable, the PQ instance starts
+//emitting 'readable' events.  Similar to how node's readable-stream
+//works except to clear the SELECT() notification you need to call
+//PQ#consumeInput instead of letting node pull the data off the socket
+//http://www.postgresql.org/docs/9.1/static/libpq-async.html
 PQ.prototype.startReader = function() {
   this.$startRead();
 };
 
+//suspends the libuv socket 'read ready' listener
 PQ.prototype.stopReader = function() {
   this.$stopRead();
 };
@@ -198,10 +249,13 @@ PQ.prototype.isBusy = function() {
   return this.$isBusy();
 };
 
+//toggles the socket blocking on outgoing writes
 PQ.prototype.setNonBlocking = function(truthy) {
   return this.$setNonBlocking(truthy ? 1 : 0);
 };
 
+//returns true if the connection is non-blocking on writes, otherwise false
+//note: connection is always non-blocking on reads if using the send* methods
 PQ.prototype.isNonBlocking = function() {
   return this.$isNonBlocking();
 };
@@ -213,6 +267,8 @@ PQ.prototype.flush = function() {
   return this.$flush();
 };
 
+//escapes a literal and returns the escaped string
+//I'm not 100% sure this doesn't do any I/O...need to check that
 PQ.prototype.escapeLiteral = function(input) {
   if(!input) return input;
   return this.$escapeLiteral(input);
