@@ -9,13 +9,12 @@ ConnectAsyncWorker::ConnectAsyncWorker(char* paramString, Connection* conn, NanC
   //this method fires within the threadpool and does not
   //block the main node run loop
   void ConnectAsyncWorker::Execute() {
-    TRACE("ConnectAsyncWorker::Execute")
-      conn->pq = PQconnectdb(paramString);
+    TRACE("ConnectAsyncWorker::Execute");
+
+    bool success = conn->ConnectDB(paramString);
     delete[] paramString;
 
-    ConnStatusType status = PQstatus(conn->pq);
-
-    if(status != CONNECTION_OK) {
+    if(!success) {
       SetErrorMessage(PQerrorMessage(conn->pq));
     }
   }

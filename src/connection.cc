@@ -35,29 +35,11 @@ NAN_METHOD(Connection::ConnectSync) {
   Connection *self = ObjectWrap::Unwrap<Connection>(args.This());
 
   char* paramString = NewCString(args[0]);
-
-  TRACEF("Connection parameters: %s\n", paramString)
-    self->pq = PQconnectdb(paramString);
+  bool success = self->ConnectDB(paramString);
 
   delete[] paramString;
 
-  ConnStatusType status = PQstatus(self->pq);
-
-  if(status != CONNECTION_OK) {
-    NanReturnValue(NanFalse());
-  }
-
-  //self->Ref();
-
-  int fd = PQsocket(self->pq);
-  uv_poll_init(uv_default_loop(), &(self->read_watcher), fd);
-  uv_poll_init(uv_default_loop(), &(self->write_watcher), fd);
-
-  //start reading to keep the event loop alive
-  //self->ReadStart();
-
-  TRACE("Connection::ConnectSync::Success");
-  NanReturnValue(NanTrue());
+  NanReturnValue(success ? NanTrue() : NanFalse());
 }
 
 NAN_METHOD(Connection::Connect) {
@@ -608,6 +590,23 @@ NAN_METHOD(Connection::EscapeIdentifier) {
   NanReturnValue(toReturn);
 }
 
+bool Connection::ConnectDB(const char* paramString) {
+  TRACEF("Connection::ConnectDB:Connection parameters: %s\n", paramString);
+  this->pq = PQconnectdb(paramString);
+
+  ConnStatusType status = PQstatus(this->pq);
+
+  if(status != CONNECTION_OK) {
+    return false;
+  }
+
+  int fd = PQsocket(this->pq);
+  uv_poll_init(uv_default_loop(), &(this->read_watcher), fd);
+  uv_poll_init(uv_default_loop(), &(this->write_watcher), fd);
+
+  TRACE("Connection::ConnectSync::Success");
+  return true;
+}
 
 void Connection::on_io_readable(uv_poll_t* handle, int status, int revents) {
   LOG("Connection::on_io_readable");

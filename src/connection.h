@@ -47,6 +47,8 @@ class Connection : public node::ObjectWrap {
     static NAN_METHOD(EscapeLiteral);
     static NAN_METHOD(EscapeIdentifier);
 
+    bool ConnectDB(const char* paramString);
+
   private:
     PGresult* lastResult;
     uv_poll_t read_watcher;
