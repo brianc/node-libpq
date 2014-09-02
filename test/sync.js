@@ -27,12 +27,16 @@ describe('result checking', function() {
   before(function() {
     this.pq = new PQ();
     this.pq.connectSync();
-    this.pq.exec('SELECT NOW() as my_col');
   });
 
   after(function() {
     this.pq.finish();
   });
+
+  it('executes query', function() {
+    this.pq.exec('SELECT NOW() as my_col');
+    assert.equal(this.pq.resultStatus(), 'PGRES_TUPLES_OK');
+  })
 
   it('has 1 tuple', function() {
     assert.equal(this.pq.ntuples(), 1);
