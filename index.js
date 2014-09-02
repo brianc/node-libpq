@@ -31,7 +31,6 @@ PQ.prototype.connect = function(paramString, cb) {
     paramString = '';
   }
   assert(cb, 'Must provide a connection callback');
-  console.log(paramString, cb)
   this.$connect(paramString, cb);
 };
 
