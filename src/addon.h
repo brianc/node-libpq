@@ -8,11 +8,11 @@
 #include "./connect-async-worker.h"
 
 
-#define LOG(msg) printf("%s\n", msg);
-#define TRACEF(format, arg) printf(format, arg);
+//#define LOG(msg) printf("%s\n", msg);
+//#define TRACEF(format, arg) printf(format, arg);
 
-//#define LOG(msg) ;
-//#define TRACEF(format, arg) ;
+#define LOG(msg) ;
+#define TRACEF(format, arg) ;
 
 #define TRACE(msg) LOG(msg);
 #define THIS() ObjectWrap::Unwrap<Connection>(args.This());
