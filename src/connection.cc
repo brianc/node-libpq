@@ -613,6 +613,29 @@ NAN_METHOD(Connection::EscapeIdentifier) {
   NanReturnValue(toReturn);
 }
 
+NAN_METHOD(Connection::Notifies) {
+  NanScope();
+  LOG("Connection::Notifies");
+
+  Connection* self = THIS();
+
+  PGnotify* msg = PQnotifies(self->pq);
+
+  if(msg == NULL) {
+    LOG("No notification");
+    NanReturnUndefined();
+  }
+
+  v8::Local<v8::Object> result = NanNew<v8::Object>();
+  result->Set(NanNew("relname"), NanNew(msg->relname));
+  result->Set(NanNew("extra"), NanNew(msg->extra));
+  result->Set(NanNew("be_pid"), NanNew(msg->be_pid));
+
+  PQfreemem(msg);
+
+  NanReturnValue(result);
+};
+
 bool Connection::ConnectDB(const char* paramString) {
   TRACEF("Connection::ConnectDB:Connection parameters: %s\n", paramString);
   this->pq = PQconnectdb(paramString);

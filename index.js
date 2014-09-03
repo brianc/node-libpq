@@ -287,4 +287,11 @@ PQ.prototype.escapeLiteral = function(input) {
 PQ.prototype.escapeIdentifier = function(input) {
   if(!input) return input;
   return this.$escapeIdentifier(input);
-}
+};
+
+//Checks for any notifications which may have arrivied
+//and returns them as a javascript object: {relname: 'string', extra: 'string', be_pid: int}
+//if there are no pending notifications this returns undefined
+PQ.prototype.notifies = function() {
+  return this.$notifies();
+};

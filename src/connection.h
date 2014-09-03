@@ -48,6 +48,7 @@ class Connection : public node::ObjectWrap {
     static NAN_METHOD(Flush);
     static NAN_METHOD(EscapeLiteral);
     static NAN_METHOD(EscapeIdentifier);
+    static NAN_METHOD(Notifies);
 
     bool ConnectDB(const char* paramString);
 

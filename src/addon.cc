@@ -54,6 +54,9 @@ void InitAddon(v8::Handle<v8::Object> exports) {
   NODE_SET_PROTOTYPE_METHOD(tpl, "$escapeLiteral", Connection::EscapeLiteral);
   NODE_SET_PROTOTYPE_METHOD(tpl, "$escapeIdentifier", Connection::EscapeIdentifier);
 
+  //async notifications
+  NODE_SET_PROTOTYPE_METHOD(tpl, "$notifies", Connection::Notifies);
+
   exports->Set(NanNew<v8::String>("PQ"), tpl->GetFunction());
 }
 
