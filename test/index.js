@@ -6,7 +6,3 @@ describe('connecting', function() {
     client.connectSync();
   });
 });
-
-describe('async connecting', function() {
-  it('works', false);
-});
