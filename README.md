@@ -25,4 +25,64 @@ var pq = new Libpq();
 
 ### connection functions
 
+Libpq provides a few different connection functions, some of which are "not preferred" anymore.  I've opted to simplify this interface a bit into a single __async__ and single __sync__ connnection function.  The function accepts an  connection string formatted as outlined [in this documentation in section 31.1.1](http://www.postgresql.org/docs/9.3/static/libpq-connect.html). If the parameters are not supplied, libpq will automatically use environment variables, a pgpass file, and other options.  Consult the libpq documentation for a better rundown of all the ways it tries to determine your connection parameters.
+
+I personally __always__ connect with environment variables and skip supplying the optional `connectionParams`.  Easier, more 12 factor app-ish, and you never risk hard coding any passwords. YMMV. :smile:
+
 #### `pq.connect([connectionParams:string], callback:function)`
+
+Asyncronously attempts to connect to the postgres server. 
+
+`connectionParams` is an optional string
+`callback` is mandatory. It is called when the connection has successfully been established.
+
+This function actually calls the `PQconnectdb` blocking connection method in a background thread within node's internal thread-pool. There is a way to do non-blocking network I/O for some of the connecting with libpq directly, but it still blocks when your local file system looking for config files, SSL certificates, .pgpass file, and doing possible dns resolution.  Because of this, the best way to get _fully_ non-blocking is to juse use `libuv_queue_work` and let node do it's magic.
+
+#### `pq.connectSync([connectionParams:string])`
+
+Attempts to connect to a PostgreSQL server. __BLOCKS__ until it either succeedes, or fails.  If it fails it will throw an exception.
+
+`connectionParams` is an optional string
+
+#### `pq.finish()`
+
+Disconnects from the backend and cleans up all memory used by the libpq connection.
+
+### Connection Status Functions
+
+#### `pq.errorMessage():string`
+
+Retrieves the last error message from the connection.  This is intended to be used after most functions which return an error code to get more detailed error information about the connection.  You can also check this _before_ issuing queries to see if your connection has been lost.
+
+#### `pq.socket():int`
+
+Returns an int representing the file descriptor for the socket used internally by the connection
+
+### Sync Command Execution Functions
+
+#### `pq.exec(commandText:string)`
+
+__sync__ sends a command to the backend and blocks until a result is received.
+
+`commandText` is a required string of the query.
+
+#### `pq.execParams(commandText:string, parameters:array[string])`
+
+__snyc__ sends a command and parameters to the backend and blocks until a result is received.
+
+`commandText` is a required string of the query.
+`parameters` is a required array of string values corresponding to each parameter in the commandText.
+
+#### `pq.prepare(statementName:string, commandText:string, nParams:int)`
+__sync__ sends a named statement to the server to be prepared for later execution. blocks until a result from the prepare operation is received.
+
+`statementName` is a required string of name of the statement to prepare.
+`commandText` is a required string of the query.
+`nParams` is a count of the number of parameters in the commandText.
+
+#### `pq.execPrepared(statementName:string, parameters:array[string])`
+__sync__ sends a command to the server to execute a previously prepared statement. blocks until the results are returned.
+
+`statementName` is a required string of the name of the prepared statement.
+`parameters` are the parameters to pass to the prepared statement.
+
