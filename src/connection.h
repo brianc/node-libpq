@@ -29,6 +29,8 @@ class Connection : public node::ObjectWrap {
     static NAN_METHOD(Ftype);
     static NAN_METHOD(Getvalue);
     static NAN_METHOD(Getisnull);
+    static NAN_METHOD(CmdStatus);
+    static NAN_METHOD(CmdTuples);
     static NAN_METHOD(ResultStatus);
     static NAN_METHOD(ResultErrorMessage);
     static NAN_METHOD(SendQuery);

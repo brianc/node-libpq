@@ -302,6 +302,29 @@ NAN_METHOD(Connection::Getisnull) {
   NanReturnValue(NanNew<v8::Boolean>(rowValue == 1));
 }
 
+NAN_METHOD(Connection::CmdStatus) {
+  NanScope();
+
+  TRACE("Connection::CmdStatus");
+  Connection *self = THIS();
+
+  PGresult* res = self->lastResult;
+  char* status = PQcmdStatus(res);
+
+  NanReturnValue(NanNew<v8::String>(status));
+}
+
+NAN_METHOD(Connection::CmdTuples) {
+  NanScope();
+
+  TRACE("Connection::CmdTuples");
+  Connection *self = THIS();
+
+  PGresult* res = self->lastResult;
+  char* tuples = PQcmdTuples(res);
+
+  NanReturnValue(NanNew<v8::String>(tuples));
+}
 
 NAN_METHOD(Connection::ResultStatus) {
   NanScope();

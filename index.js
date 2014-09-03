@@ -215,6 +215,16 @@ PQ.prototype.getisnull = function(row, col) {
   return this.$getisnull(row, col);
 };
 
+//returns the status of the command
+PQ.prototype.cmdStatus = function() {
+  return this.$cmdStatus();
+};
+
+//returns the tuples in the command
+PQ.prototype.cmdTuples = function() {
+  return this.$cmdTuples();
+};
+
 //starts the 'read ready' libuv socket listener.
 //Once the socket becomes readable, the PQ instance starts
 //emitting 'readable' events.  Similar to how node's readable-stream

@@ -45,6 +45,8 @@ void InitAddon(v8::Handle<v8::Object> exports) {
   NODE_SET_PROTOTYPE_METHOD(tpl, "$ftype", Connection::Ftype);
   NODE_SET_PROTOTYPE_METHOD(tpl, "$getvalue", Connection::Getvalue);
   NODE_SET_PROTOTYPE_METHOD(tpl, "$getisnull", Connection::Getisnull);
+  NODE_SET_PROTOTYPE_METHOD(tpl, "$cmdStatus", Connection::CmdStatus);
+  NODE_SET_PROTOTYPE_METHOD(tpl, "$cmdTuples", Connection::CmdTuples);
   NODE_SET_PROTOTYPE_METHOD(tpl, "$resultStatus", Connection::ResultStatus);
   NODE_SET_PROTOTYPE_METHOD(tpl, "$resultErrorMessage", Connection::ResultErrorMessage);
 
