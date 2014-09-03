@@ -715,7 +715,8 @@ void Connection::Emit(const char* message) {
   assert(emit_v->IsFunction());
   v8::Local<v8::Function> emit_f = emit_v.As<v8::Function>();
 
-  v8::Handle<v8::Value> args[1] = { v8::String::New(message) };
+  v8::Local<v8::String> eventName = NanNew<v8::String>(message);
+  v8::Handle<v8::Value> args[1] = { eventName };
 
   v8::TryCatch tc;
   emit_f->Call(NanObjectWrapHandle(this), 1, args);
