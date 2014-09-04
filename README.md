@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/brianc/node-libpq.svg?branch=master)](https://travis-ci.org/brianc/node-libpq)
 
-Node native bindings to the PostgreSQL [libpq](http://www.postgresql.org/docs/9.3/interactive/libpq.html) C client library.  This module attempts to mirror _as closely as possible_ the C API provided by libpq and provides the absolute minimum level of abstraction.  It is intended to be extremely low level and allow you the same access as you would have to libpq directly from C, except in node.js! The obvious trade-off for being "close to the metal" is having to use a very non-idomatic node module.
+Node native bindings to the PostgreSQL [libpq](http://www.postgresql.org/docs/9.3/interactive/libpq.html) C client library.  This module attempts to mirror _as closely as possible_ the C API provided by libpq and provides the absolute minimum level of abstraction.  It is intended to be extremely low level and allow you the same access as you would have to libpq directly from C, except in node.js! The obvious trade-off for being "close to the metal" is having to use a very "c style" API in JavaScript.
 
 If you have a good understanding of libpq or used it before hopefully the methods within node-libpq will be familiar; otherwise, you should probably spend some time reading [the official libpq C library documentation](http://www.postgresql.org/docs/9.3/interactive/libpq.html) to become a bit familiar. Referencing the libpq documentation directly should also provide you with more insight into the methods here. I will do my best to explain any differences from the C code for each method.
 
@@ -123,4 +123,102 @@ __async__ sends a request to execute a previously prepared statement.
 ##### `pq.getResult():boolean`
 Parses received data from the server into a `PGresult` struct and sets a pointer internally to the connection object to this result.  __warning__: this function will __block__ if libpq is waiting on async results to be returned from the server.  Call `pq.isBusy()` to determine if this command will block.
 
-Returns `true` if libpq was able to read buffered data & parse a result object.  Returns `false` if there are no results waiting to be parsed.
+Returns `true` if libpq was able to read buffered data & parse a result object.  Returns `false` if there are no results waiting to be parsed.  Generally doing async style queries you'll call this repeadedly until it returns false and then use the result accessor methods to pull results out of the current result set.
+
+### Result accessor functions
+
+After a command is run in either sync or async mode & the results have been received, node-libpq stores the results internally and provides you access to the results via the standard libpq methods.  The difference here is libpq will return a pointer to a PGresult structure which you access via libpq functions, but node-libpq stores the most recent result within itself and passes the opaque PGresult structure to the libpq methods.  This is to avoid passing around a whole bunch of pointers to unmanaged memory and keeps the burden of properly allocating and freeing memory within node-libpq.
+
+##### `pq.resultStatus():string`
+
+Returns either `PGRES_COMMAND_OK` or `PGRES_FATAL_ERROR` depending on the status of the last executed command.
+
+##### `pq.resultErrorMessage():string`
+
+Retrieves the error message from the result.  This will return `null` if the result does not have an error.
+
+##### `pq.clear()`
+
+Manually frees the memory associated with a `PGresult` pointer.  Generally this is called for you, but if you absolutely want to free the pointer yourself, you can.
+
+##### `pq.ntuples():int`
+
+Retrieve the number of tuples (rows) from the result.
+
+##### `pq.nfields():int`
+
+Retrieve the number of fields (columns) from the result.
+
+##### `pq.fname(fieldNumber:int):string`
+
+Retrieve the name of the field (column) at the given offset. Offset starts at 0.
+
+##### `pq.ftype(fieldNumber:int):int`
+
+Retrieve the `Oid` of the field (column) at the given offset. Offset starts at 0.
+
+##### `pq.getvalue(tupleNumber:int, fieldNumber:int):string`
+
+Retrieve the text value at a given tuple (row) and field (column) offset. Both offsets start at 0.  A null value is returned as the empty string `''`.
+
+##### `pq.getisnull(tupleNumber:int, fieldNumber:int):boolean`
+
+Returns `true` if the value at the given offsets is actually `null`.  Otherwise returns `false`.  This is because `pq.getvalue()` returns an empty string for both an actual empty string and for a `null` value.  Weird, huh?
+
+##### `pq.cmdStatus():string`
+
+Returns the status string associated with a result.  Something akin to `INSERT 3 0` if you inserted 3 rows.
+
+##### `pq.cmdTuples():string`
+
+Returns the number of tuples (rows) affected by the command. Even though this is a number, it is returned as a string to mirror libpq's behavior.
+
+### Async socket access
+
+These functions don't have a direct match within libpq.  They exist to allow you to monitor the readability or writability of the libpq socket based on your platforms equivilant to `select()`.  This allows you to perform async I/O completely from JavaScript.
+
+##### `pq.startReader()`
+
+This uses libuv to start a read watcher on the socket open to the backend.  As soon as this socket becomes readable the `pq` instance will emit a `readable` event.  It is up to you to call `pq.consumeInput()` one or more times to clear this read notification or it will continue to emit read events over and over and over.  The exact flow is outlined [here] under the documentation for `PQisBusy`.
+
+##### `pq.stopReader()`
+
+Tells libuv to stop the read watcher on the connection socket.
+
+##### `pq.writable(callback:function)`
+
+Call this to make sure the socket has flushed all data to the operating system.  Once the socket is writable, your callback will be called.  Usefully when using `PQsetNonBlocking` and `PQflush` for async writing.
+
+### More async methods
+
+These are all documented in detail within the [libpq documentation](http://www.postgresql.org/docs/9.3/static/libpq-async.html) and function almost identically.
+
+##### `pq.consumeInput():boolean`
+
+Reads waiting data from the socket.  If the socket is not readable and you call this it will __block__ so be careful and only call it within the `readable` callback for the most part.
+
+Returns `true` if data was read.  Returns `false` if there was an error.  You can access error details with `pq.errorMessage()`.
+
+##### `pq.isBusy():boolean`
+
+Returns `true` if calling `pq.consumeInput()` would block waiting for more data.  Returns `false` if all data has been read from the socket.  Once this returns `false` it is safe to call `pq.getResult()`
+
+##### `pq.setNonBlocking(nonBlocking:boolean):boolean`
+
+Toggle the socket blocking on _write_.  Returns `true` if the socket's state was succesfully toggled.  Returns `false` if there was an error.
+
+- `nonBlocking` is `true` to set the connection to use non-blocking writes. `false` to use blocking writes.
+
+##### `pq.flush():int`
+
+Flushes buffered data to the socket.  Returns `1` if socket is not write-ready at which case you should call `pq.writable` with a callback and wait for the socket to be writable and then call `pq.flush()` again.  Returns `0` if all data was flushed.  Returns `-1` if there was an error.
+
+### Misc Functions
+
+##### `pq.escapeLiteral(input:string):string`
+
+Exact copy of the `PQescapeLiteral` function within libpq.  Requires an established connection but does not perform any I/O.
+
+##### `pq.escapeIdentifier(input:string):string`
+
+Exact copy of the `PQescapeIdentifier` function within libpq.  Requires an established connection but does not perform any I/O.
