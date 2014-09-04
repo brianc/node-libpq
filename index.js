@@ -295,3 +295,36 @@ PQ.prototype.escapeIdentifier = function(input) {
 PQ.prototype.notifies = function() {
   return this.$notifies();
 };
+
+//Sends a buffer of binary data to the server
+//returns 1 if the command was sent successfully
+//returns 0 if the command would block (use PQ#writable here if so)
+//returns -1 if there was an error
+PQ.prototype.putCopyData = function(buffer) {
+  assert(buffer instanceof Buffer);
+  return this.$putCopyData(buffer);
+};
+
+//Sends a command to 'finish' the copy
+//if an error message is passed, it will be sent to the
+//backend and signal a request to cancel the copy in
+//returns 1 if sent succesfully
+//returns 0 if the command would block
+//returns -1 if there was an error
+PQ.prototype.putCopyEnd = function(errorMessage) {
+  if(errorMessage) {
+    return this.$putCopyEnd(errorMessage);
+  }
+  return this.$putCopyEnd();
+};
+
+//Gets a buffer of data from a copy out command
+//if async is passed as true it will not block waiting
+//for the result, otherwise this will BLOCK for a result.
+//returns a buffer if successful
+//returns 0 if copy is still in process (async only)
+//returns -1 if the copy is done
+//returns -2 if there was an error
+PQ.prototype.getCopyData = function(async) {
+  return this.$getCopyData(!!async);
+};

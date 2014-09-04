@@ -15,7 +15,6 @@ ConnectAsyncWorker::ConnectAsyncWorker(char* paramString, Connection* conn, NanC
     delete[] paramString;
 
     if(!success) {
-      SetErrorMessage(PQerrorMessage(conn->pq));
+      SetErrorMessage(conn->ErrorMessage());
     }
   }
-

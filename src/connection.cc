@@ -636,6 +636,69 @@ NAN_METHOD(Connection::Notifies) {
   NanReturnValue(result);
 };
 
+NAN_METHOD(Connection::PutCopyData) {
+  NanScope();
+  LOG("Connection::PutCopyData");
+
+  Connection* self = THIS();
+
+  v8::Handle<v8::Value> buffer = args[0];
+
+  char* data = node::Buffer::Data(buffer);
+  int length = node::Buffer::Length(buffer);
+
+  int result = PQputCopyData(self->pq, data, length);
+
+  NanReturnValue(NanNew<v8::Number>(result));
+}
+
+NAN_METHOD(Connection::PutCopyEnd) {
+  NanScope();
+  LOG("Connection::PutCopyEnd");
+
+  Connection* self = THIS();
+
+  //optional error message
+
+  bool sendErrorMessage = args.Length() > 0;
+  char* msg = NULL;
+  if(sendErrorMessage) {
+    msg = NewCString(args[0]);
+    TRACEF("Connection::PutCopyEnd:%s\n", msg);
+  }
+
+  int result = PQputCopyEnd(self->pq, msg);
+
+  if(sendErrorMessage) {
+    delete[] msg;
+  }
+
+  NanReturnValue(NanNew<v8::Number>(result));
+}
+
+NAN_METHOD(Connection::GetCopyData) {
+  LOG("Connection::GetCopyData");
+
+  Connection* self = THIS();
+
+  char* buffer = NULL;
+  int async = args[0]->IsTrue() ? 1 : 0;
+
+  TRACEF("Connection::GetCopyData:async %d\n", async);
+
+  int length = PQgetCopyData(self->pq, &buffer, async);
+
+  //some sort of failure or not-ready condition
+  if(length < 1) {
+    NanReturnValue(NanNew<v8::Number>(length));
+  }
+
+  v8::Local<v8::Value> nodeBuffer = NanNewBufferHandle(buffer, length);
+  PQfreemem(buffer);
+
+  NanReturnValue(nodeBuffer);
+}
+
 bool Connection::ConnectDB(const char* paramString) {
   TRACEF("Connection::ConnectDB:Connection parameters: %s\n", paramString);
   this->pq = PQconnectdb(paramString);
@@ -652,6 +715,10 @@ bool Connection::ConnectDB(const char* paramString) {
 
   TRACE("Connection::ConnectSync::Success");
   return true;
+}
+
+char * Connection::ErrorMessage() {
+  return PQerrorMessage(this->pq);
 }
 
 void Connection::on_io_readable(uv_poll_t* handle, int status, int revents) {

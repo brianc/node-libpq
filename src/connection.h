@@ -7,11 +7,6 @@
 
 class Connection : public node::ObjectWrap {
   public:
-    PGconn* pq;
-
-    Connection();
-    ~Connection();
-
     static NAN_METHOD(Create);
     static NAN_METHOD(ConnectSync);
     static NAN_METHOD(Connect);
@@ -49,13 +44,21 @@ class Connection : public node::ObjectWrap {
     static NAN_METHOD(EscapeLiteral);
     static NAN_METHOD(EscapeIdentifier);
     static NAN_METHOD(Notifies);
+    static NAN_METHOD(PutCopyData);
+    static NAN_METHOD(PutCopyEnd);
+    static NAN_METHOD(GetCopyData);
 
     bool ConnectDB(const char* paramString);
+    char* ErrorMessage();
 
   private:
+    PGconn* pq;
     PGresult* lastResult;
     uv_poll_t read_watcher;
     uv_poll_t write_watcher;
+
+    Connection();
+    ~Connection();
 
     static void on_io_readable(uv_poll_t* handle, int status, int revents);
     static void on_io_writable(uv_poll_t* handle, int status, int revents);

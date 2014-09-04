@@ -57,6 +57,11 @@ void InitAddon(v8::Handle<v8::Object> exports) {
   //async notifications
   NODE_SET_PROTOTYPE_METHOD(tpl, "$notifies", Connection::Notifies);
 
+  //COPY IN/OUT
+  NODE_SET_PROTOTYPE_METHOD(tpl, "$putCopyData", Connection::PutCopyData);
+  NODE_SET_PROTOTYPE_METHOD(tpl, "$putCopyEnd", Connection::PutCopyEnd);
+  NODE_SET_PROTOTYPE_METHOD(tpl, "$getCopyData", Connection::GetCopyData);
+
   exports->Set(NanNew<v8::String>("PQ"), tpl->GetFunction());
 }
 
