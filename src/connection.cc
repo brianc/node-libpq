@@ -677,6 +677,8 @@ NAN_METHOD(Connection::PutCopyEnd) {
 }
 
 NAN_METHOD(Connection::GetCopyData) {
+  NanScope();
+
   LOG("Connection::GetCopyData");
 
   Connection* self = THIS();
@@ -837,4 +839,3 @@ void Connection::Emit(const char* message) {
     node::FatalException(tc);
   }
 }
-
