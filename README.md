@@ -38,7 +38,9 @@ Asyncronously attempts to connect to the postgres server.
 - `connectionParams` is an optional string
 - `callback` is mandatory. It is called when the connection has successfully been established.
 
-This function actually calls the `PQconnectdb` blocking connection method in a background thread within node's internal thread-pool. There is a way to do non-blocking network I/O for some of the connecting with libpq directly, but it still blocks when your local file system looking for config files, SSL certificates, .pgpass file, and doing possible dns resolution.  Because of this, the best way to get _fully_ non-blocking is to juse use `libuv_queue_work` and let node do it's magic.
+__async_ Connects to a PostgreSQL backend server process.
+
+This function actually calls the `PQconnectdb` blocking connection method in a background thread within node's internal thread-pool. There is a way to do non-blocking network I/O for some of the connecting with libpq directly, but it still blocks when your local file system looking for config files, SSL certificates, .pgpass file, and doing possible dns resolution.  Because of this, the best way to get _fully_ non-blocking is to juse use `libuv_queue_work` and let node do it's magic and so that's what I do.  This function _does not block_.
 
 ##### `pq.connectSync([connectionParams:string])`
 
