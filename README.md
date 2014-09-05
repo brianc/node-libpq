@@ -31,7 +31,7 @@ I personally __always__ connect with environment variables and skip supplying th
 
 ##### `pq.connect([connectionParams:string], callback:function)`
 
-Asyncronously attempts to connect to the postgres server. 
+Asyncronously attempts to connect to the postgres server.
 
 - `connectionParams` is an optional string
 - `callback` is mandatory. It is called when the connection has successfully been established.
@@ -88,7 +88,7 @@ __sync__ sends a command to the server to execute a previously prepared statemen
 
 ### Async Command Execution Functions
 
-In libpq the async command execution functions _only_ dispatch a reqest to the backend to run a query.  They do not start result fetching on their own.  Because libpq is a C api there is a somewhat complicated "dance" to retrieve the result information in a non-blocking way.  node-libpq attempts to do as little as possible to abstract over this; therefore, the following functions are only part of the story.  For a complete tutorial on how to dispatch & retrieve results from libpq in an async way you can [view the complete approach here](https://github.com/brianc/node-pg-native/blob/master/index.js#L105) 
+In libpq the async command execution functions _only_ dispatch a reqest to the backend to run a query.  They do not start result fetching on their own.  Because libpq is a C api there is a somewhat complicated "dance" to retrieve the result information in a non-blocking way.  node-libpq attempts to do as little as possible to abstract over this; therefore, the following functions are only part of the story.  For a complete tutorial on how to dispatch & retrieve results from libpq in an async way you can [view the complete approach here](https://github.com/brianc/node-pg-native/blob/master/index.js#L105)
 
 ##### `pq.sendQuery(commandText:string):boolean`
 __async__ sends a query to the server to be processed.
@@ -212,6 +212,47 @@ Toggle the socket blocking on _write_.  Returns `true` if the socket's state was
 ##### `pq.flush():int`
 
 Flushes buffered data to the socket.  Returns `1` if socket is not write-ready at which case you should call `pq.writable` with a callback and wait for the socket to be writable and then call `pq.flush()` again.  Returns `0` if all data was flushed.  Returns `-1` if there was an error.
+
+### listen/notify
+
+##### `pq.notifies():object`
+
+Checks for `NOTIFY` messages that have come in.  If any have been received they will be in the following format:
+
+```js
+var msg = {
+  relname: 'name of channel',
+  extra: 'message passed to notify command',
+  be_pid: 130
+}
+```
+
+### COPY IN/OUT
+
+##### `pq.putCopyData(buffer:Buffer):int`
+
+After issuing a successful command like `COPY table FROM stdin` you can start putting buffers directly into the databse with this function.
+
+- `buffer` Is a required node buffer of text data such as `Buffer('column1\tcolumn2\n')`
+
+Returns `1` if sent succesfully. Returns `0` if the command would block (only if you have called `pq.setNonBlocking(true)`). Returns `-1` if there was an error sending the command.
+
+##### `pq.putCopyEnd([errorMessage:string])`
+
+Signals the backed your copy procedure is complete.  If you pass `errorMessage` it will be sent to the backend and effectively cancel the copy operation.
+
+- `errorMessage` is an _optional_ string you can pass to cancel the copy operation.
+
+Returns `1` if sent succesfully. Returns `0` if the command would block (only if you have called `pq.setNonBlocking(true)`). Returns `-1` if there was an error sending the command.
+
+
+##### `pq.getCopyData():Buffer or int`
+
+After issuing a successfuly command like `COPY table TO stdout` gets copy data from the connection.
+
+Returns a node buffer if there is data available.
+
+Returns `0` if the copy is still in progress (only if you have called `pq.setNonBlocking(true)`). Returns `-1` if the copy is completed. Returns `-2` if there was an error.
 
 ### Misc Functions
 
