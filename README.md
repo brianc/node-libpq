@@ -6,6 +6,8 @@ Node native bindings to the PostgreSQL [libpq](http://www.postgresql.org/docs/9.
 
 If you have a good understanding of libpq or used it before hopefully the methods within node-libpq will be familiar; otherwise, you should probably spend some time reading [the official libpq C library documentation](http://www.postgresql.org/docs/9.3/interactive/libpq.html) to become a bit familiar. Referencing the libpq documentation directly should also provide you with more insight into the methods here. I will do my best to explain any differences from the C code for each method.
 
+I am also building some [higher level abstractions](https://github.com/brianc/node-pg-native) to eventually replace the `pg.native` portion of node-postgres.  They should help as reference material.
+
 ## install
 
 You need libpq installed & the `pg_config` program should be in your path.  You also need [node-gyp](https://github.com/TooTallNate/node-gyp) installed.
