@@ -1,8 +1,8 @@
 var PQ = require('../'),
     assert = require('assert');
 
-describe('without being connected', function() {
-  it('exec fails', function() {
+describe('without being connected', function () {
+  it('exec fails', function () {
     var pq = new PQ();
 
     pq.exec();
@@ -10,7 +10,7 @@ describe('without being connected', function() {
     assert(pq.errorMessage());
   });
 
-  it('fails on async query', function() {
+  it('fails on async query', function () {
     var pq = new PQ();
     var success = pq.sendQuery('blah');
 

@@ -2,24 +2,24 @@ var PQ = require('../'),
     assert = require('assert'),
     helper = require('./helper');
 
-describe('low-level query integration tests', function() {
+describe('low-level query integration tests', function () {
 
   helper.setupIntegration();
 
-  describe('exec', function() {
-    before(function() {
+  describe('exec', function () {
+    before(function () {
       this.pq.exec('SELECT * FROM test_data');
     });
 
-    it('has correct tuples', function() {
+    it('has correct tuples', function () {
       assert.strictEqual(this.pq.ntuples(), 3);
     });
 
-    it('has correct field count', function() {
+    it('has correct field count', function () {
       assert.strictEqual(this.pq.nfields(), 2);
     });
 
-    it('has correct rows', function() {
+    it('has correct rows', function () {
       assert.strictEqual(this.pq.getvalue(0, 0), 'brian');
       assert.strictEqual(this.pq.getvalue(1, 1), '30');
       assert.strictEqual(this.pq.getvalue(2, 0), '');

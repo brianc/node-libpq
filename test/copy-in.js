@@ -1,15 +1,15 @@
 var helper = require('./helper'),
     assert = require('assert');
 
-describe('COPY IN', function() {
+describe('COPY IN', function () {
   helper.setupIntegration();
 
-  it('check existing data assuptions', function() {
+  it('check existing data assuptions', function () {
     this.pq.exec('SELECT COUNT(*) FROM test_data');
     assert.equal(this.pq.getvalue(0, 0), 3);
   });
 
-  it('copies data in', function() {
+  it('copies data in', function () {
     var success = this.pq.exec('COPY test_data FROM stdin');
     assert.equal(this.pq.resultStatus(), 'PGRES_COPY_IN');
 
@@ -21,13 +21,13 @@ describe('COPY IN', function() {
     res = this.pq.putCopyEnd();
     assert.strictEqual(res, 1);
 
-    while(this.pq.getResult()) {}
+    while (this.pq.getResult()) {}
 
     this.pq.exec('SELECT COUNT(*) FROM test_data');
     assert.equal(this.pq.getvalue(0, 0), 4);
   });
 
-  it('can cancel copy data in', function() {
+  it('can cancel copy data in', function () {
     var success = this.pq.exec('COPY test_data FROM stdin');
     assert.equal(this.pq.resultStatus(), 'PGRES_COPY_IN');
 
@@ -39,9 +39,10 @@ describe('COPY IN', function() {
     res = this.pq.putCopyEnd('cancel!');
     assert.strictEqual(res, 1);
 
-    while(this.pq.getResult()) {}
+    while (this.pq.getResult()) {}
     assert(this.pq.errorMessage());
-    assert(this.pq.errorMessage().indexOf('cancel!') > -1, this.pq.errorMessage() + ' should have contained "cancel!"');
+    assert(this.pq.errorMessage().indexOf('cancel!') > -1, this.pq.errorMessage() +
+      ' should have contained "cancel!"');
 
     this.pq.exec('SELECT COUNT(*) FROM test_data');
     assert.equal(this.pq.getvalue(0, 0), 4);

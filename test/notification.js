@@ -1,15 +1,15 @@
 var Libpq = require('../'),
     assert = require('assert');
 
-describe('LISTEN/NOTIFY', function() {
-  before(function() {
+describe('LISTEN/NOTIFY', function () {
+  before(function () {
     this.listener = new Libpq();
     this.notifier = new Libpq();
     this.listener.connectSync();
     this.notifier.connectSync();
   });
 
-  it('works', function() {
+  it('works', function () {
     this.notifier.exec("NOTIFY testing, 'My Payload'");
     var notice = this.listener.notifies();
     assert.equal(notice, null);
@@ -25,7 +25,7 @@ describe('LISTEN/NOTIFY', function() {
     assert(notice.be_pid);
   });
 
-  after(function() {
+  after(function () {
     this.listener.finish();
     this.notifier.finish();
   });

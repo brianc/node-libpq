@@ -1,16 +1,16 @@
 var helper = require('./helper'),
     assert = require('assert');
 
-describe('COPY OUT', function() {
+describe('COPY OUT', function () {
   helper.setupIntegration();
 
-  var getRow = function(pq, expected) {
+  var getRow = function (pq, expected) {
     var result = pq.getCopyData(false);
     assert(result instanceof Buffer, 'Result should be a buffer');
     assert.equal(result.toString('utf8'), expected);
   };
 
-  it('copies data out', function() {
+  it('copies data out', function () {
     this.pq.exec('COPY test_data TO stdin');
     assert.equal(this.pq.resultStatus(), 'PGRES_COPY_OUT');
     getRow(this.pq, 'brian\t32\n');
