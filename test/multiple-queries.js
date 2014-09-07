@@ -51,7 +51,10 @@ var query = function(pq, cb) {
 
 describe('multiple queries', function() {
   var pq = new Libpq();
-  pq.connectSync();
+
+  before(function(done) {
+    pq.connect(done)
+  })
 
   it('first query works', function(done) {
     query(pq, done);
