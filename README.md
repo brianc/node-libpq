@@ -92,7 +92,7 @@ __sync__ sends a command to the server to execute a previously prepared statemen
 
 ### Async Command Execution Functions
 
-In libpq the async command execution functions _only_ dispatch a reqest to the backend to run a query.  They do not start result fetching on their own.  Because libpq is a C api there is a somewhat complicated "dance" to retrieve the result information in a non-blocking way.  node-libpq attempts to do as little as possible to abstract over this; therefore, the following functions are only part of the story.  For a complete tutorial on how to dispatch & retrieve results from libpq in an async way you can [view the complete approach here](https://github.com/brianc/node-pg-native/blob/master/index.js#L105)
+In libpq the async command execution functions _only_ dispatch a request to the backend to run a query.  They do not start result fetching on their own.  Because libpq is a C api there is a somewhat complicated "dance" to retrieve the result information in a non-blocking way.  node-libpq attempts to do as little as possible to abstract over this; therefore, the following functions are only part of the story.  For a complete tutorial on how to dispatch & retrieve results from libpq in an async way you can [view the complete approach here](https://github.com/brianc/node-pg-native/blob/master/index.js#L105)
 
 ##### `pq.sendQuery(commandText:string):boolean`
 __async__ sends a query to the server to be processed.
