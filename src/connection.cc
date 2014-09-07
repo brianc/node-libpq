@@ -1,4 +1,4 @@
-#include "./addon.h"
+#include "addon.h"
 
 Connection::Connection() : ObjectWrap() {
   TRACE("Connection::Constructor");

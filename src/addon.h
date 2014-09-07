@@ -4,8 +4,8 @@
 #include <node.h>
 #include <nan.h>
 #include <libpq-fe.h>
-#include "./connection.h"
-#include "./connect-async-worker.h"
+#include "connection.h"
+#include "connect-async-worker.h"
 
 
 //#define LOG(msg) printf("%s\n", msg);
