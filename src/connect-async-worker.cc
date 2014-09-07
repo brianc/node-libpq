@@ -1,5 +1,5 @@
 //helper class to perform async connection
-#include "./addon.h"
+#include "addon.h"
 
 ConnectAsyncWorker::ConnectAsyncWorker(char* paramString, Connection* conn, NanCallback* callback)
   : NanAsyncWorker(callback), conn(conn), paramString(paramString) { }

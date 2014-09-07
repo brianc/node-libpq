@@ -1,4 +1,4 @@
-#include "./addon.h"
+#include "addon.h"
 
 // Initialize the node addon
 void InitAddon(v8::Handle<v8::Object> exports) {

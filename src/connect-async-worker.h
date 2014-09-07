@@ -1,7 +1,7 @@
 #ifndef NODE_LIBPQ_CONNECT_ASYNC_WORKER
 #define NODE_LIBPQ_CONNECT_ASYNC_WORKER
 
-#include "./addon.h"
+#include "addon.h"
 
 class ConnectAsyncWorker : public NanAsyncWorker {
 public:
