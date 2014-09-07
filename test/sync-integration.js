@@ -1,6 +1,6 @@
-var PQ = require('../')
-var assert = require('assert');
-var helper = require('./helper')
+var PQ = require('../'),
+    assert = require('assert'),
+    helper = require('./helper');
 
 describe('low-level query integration tests', function() {
 

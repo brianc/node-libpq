@@ -1,5 +1,5 @@
-var assert = require('assert');
-var helper = require('./helper')
+var assert = require('assert'),
+    helper = require('./helper');
 
 describe('prepare and execPrepared', function() {
 
@@ -19,7 +19,7 @@ describe('prepare and execPrepared', function() {
     it('works properly', function() {
       this.pq.execPrepared(statementName, ['Brian']);
       assert.ifError(this.pq.resultErrorMessage());
-      assert.strictEqual(this.pq.ntuples(), 1)
+      assert.strictEqual(this.pq.ntuples(), 1);
       assert.strictEqual(this.pq.nfields(), 1);
       assert.strictEqual(this.pq.getvalue(0, 0), 'Brian');
     });

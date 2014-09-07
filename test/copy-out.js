@@ -1,5 +1,5 @@
-var helper = require('./helper');
-var assert = require('assert');
+var helper = require('./helper'),
+    assert = require('assert');
 
 describe('COPY OUT', function() {
   helper.setupIntegration();

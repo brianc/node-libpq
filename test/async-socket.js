@@ -1,6 +1,6 @@
-var LibPQ = require('../')
-var helper = require('./helper')
-var assert = require('assert');
+var LibPQ = require('../'),
+    helper = require('./helper'),
+    assert = require('assert');
 
 var consume = function(pq, cb) {
   if(!pq.isBusy()) return cb();
@@ -8,15 +8,15 @@ var consume = function(pq, cb) {
   var onReadable = function() {
     assert(pq.consumeInput(), pq.errorMessage());
     if(pq.isBusy()) {
-      console.log('consuming a 2nd buffer of input later...')
+      console.log('consuming a 2nd buffer of input later...');
       return;
     }
     pq.removeListener('readable', onReadable);
     pq.stopReader();
     cb();
-  }
+  };
   pq.on('readable', onReadable);
-}
+};
 
 describe('async simple query', function() {
   helper.setupIntegration();
@@ -51,7 +51,7 @@ describe('async simple query', function() {
       assert.strictEqual(pq.ntuples(), 1);
       assert.equal(pq.getvalue(0, 0), 'Brian');
       done();
-    })
+    });
   });
 
   it('dispatches named query', function(done) {

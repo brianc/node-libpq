@@ -1,6 +1,6 @@
-var LibPQ = require('../')
-var helper = require('./helper')
-var assert = require('assert');
+var LibPQ = require('../'),
+    helper = require('./helper'),
+    assert = require('assert');
 
 describe('getting socket', function() {
   helper.setupIntegration();

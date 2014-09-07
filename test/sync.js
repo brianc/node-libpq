@@ -1,5 +1,5 @@
-var PQ = require('../')
-var assert = require('assert');
+var PQ = require('../');
+    assert = require('assert');
 
 describe('connecting with bad credentials', function() {
   it('throws an error', function() {
@@ -36,7 +36,7 @@ describe('result checking', function() {
   it('executes query', function() {
     this.pq.exec('SELECT NOW() as my_col');
     assert.equal(this.pq.resultStatus(), 'PGRES_TUPLES_OK');
-  })
+  });
 
   it('has 1 tuple', function() {
     assert.equal(this.pq.ntuples(), 1);

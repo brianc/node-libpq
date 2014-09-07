@@ -1,5 +1,5 @@
-var assert = require('assert');
-var helper = require('./helper')
+var assert = require('assert'),
+    helper = require('./helper');
 
 describe('sync query with parameters', function() {
   helper.setupIntegration();

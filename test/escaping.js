@@ -1,5 +1,5 @@
-var Libpq = require('../');
-var assert = require('assert');
+var Libpq = require('../'),
+    assert = require('assert');
 
 describe('escapeLiteral', function() {
   it('fails to escape when the server is not connected', function() {

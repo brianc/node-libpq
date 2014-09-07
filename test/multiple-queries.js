@@ -1,12 +1,12 @@
 var Libpq = require('../');
-var ok = require('okay')
+var ok = require('okay');
 
-var queryText = "SELECT * FROM generate_series(1, 1000)"
+var queryText = "SELECT * FROM generate_series(1, 1000)";
 
 var query = function(pq, cb) {
   var sent = pq.sendQuery(queryText);
   if(!sent) return cb(new Error(pg.errorMessage()));
-  console.log('sent query')
+  console.log('sent query');
 
   //consume any outstanding results
   //while(!pq.isBusy() && pq.getResult()) {
@@ -16,7 +16,7 @@ var query = function(pq, cb) {
   var cleanup = function() {
     pq.removeListener('readable', onReadable);
     pq.stopReader();
-  }
+  };
 
   var readError = function(message) {
     cleanup();
@@ -43,7 +43,7 @@ var query = function(pq, cb) {
       return readError('Only one result at a time is accepted');
     }
     cleanup();
-    return cb(null, [])
+    return cb(null, []);
   };
   pq.on('readable', onReadable);
   pq.startReader();

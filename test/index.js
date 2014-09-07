@@ -1,4 +1,4 @@
-var Client = require('../')
+var Client = require('../');
 
 describe('connecting', function() {
   it('works', function() {

@@ -1,5 +1,5 @@
-var helper = require('./helper');
-var assert = require('assert');
+var helper = require('./helper'),
+    assert = require('assert');
 
 describe('COPY IN', function() {
   helper.setupIntegration();
@@ -14,10 +14,11 @@ describe('COPY IN', function() {
     assert.equal(this.pq.resultStatus(), 'PGRES_COPY_IN');
 
     var buffer = Buffer("bob\t100\n", 'utf8');
+
     var res = this.pq.putCopyData(buffer);
     assert.strictEqual(res, 1);
 
-    var res = this.pq.putCopyEnd();
+    res = this.pq.putCopyEnd();
     assert.strictEqual(res, 1);
 
     while(this.pq.getResult()) {}
@@ -31,10 +32,11 @@ describe('COPY IN', function() {
     assert.equal(this.pq.resultStatus(), 'PGRES_COPY_IN');
 
     var buffer = Buffer("bob\t100\n", 'utf8');
+
     var res = this.pq.putCopyData(buffer);
     assert.strictEqual(res, 1);
 
-    var res = this.pq.putCopyEnd('cancel!');
+    res = this.pq.putCopyEnd('cancel!');
     assert.strictEqual(res, 1);
 
     while(this.pq.getResult()) {}
