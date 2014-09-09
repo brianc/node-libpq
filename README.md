@@ -250,13 +250,15 @@ Signals the backed your copy procedure is complete.  If you pass `errorMessage` 
 Returns `1` if sent succesfully. Returns `0` if the command would block (only if you have called `pq.setNonBlocking(true)`). Returns `-1` if there was an error sending the command.
 
 
-##### `pq.getCopyData():Buffer or int`
+##### `pq.getCopyData(async:boolean):Buffer or int`
 
 After issuing a successfuly command like `COPY table TO stdout` gets copy data from the connection.
 
 Returns a node buffer if there is data available.
 
 Returns `0` if the copy is still in progress (only if you have called `pq.setNonBlocking(true)`). Returns `-1` if the copy is completed. Returns `-2` if there was an error.
+
+- `async` is a boolean. Pass `false` to __block__ waiting for data from the backend. _defaults to `false`_
 
 ### Misc Functions
 
