@@ -352,6 +352,43 @@ NAN_METHOD(Connection::ResultErrorMessage) {
   NanReturnValue(NanNew<v8::String>(status));
 }
 
+# define SET_E(key, name) \
+  field = PQresultErrorField(self->lastResult, key); \
+  if(field != NULL) { \
+    result->Set(NanNew(name), NanNew(field)); \
+  }
+
+NAN_METHOD(Connection::ResultErrorFields) {
+  NanScope();
+
+  Connection *self = THIS();
+
+  if(self->lastResult == NULL) {
+    NanReturnNull();
+  }
+
+  v8::Local<v8::Object> result = NanNew<v8::Object>();
+  char* field;
+  SET_E(PG_DIAG_SEVERITY, "severity");
+  SET_E(PG_DIAG_SQLSTATE, "sqlState");
+  SET_E(PG_DIAG_MESSAGE_PRIMARY, "messagePrimary");
+  SET_E(PG_DIAG_MESSAGE_DETAIL, "messageDetail");
+  SET_E(PG_DIAG_MESSAGE_HINT, "messageHint");
+  SET_E(PG_DIAG_STATEMENT_POSITION, "statementPosition");
+  SET_E(PG_DIAG_INTERNAL_POSITION, "internalPosition");
+  SET_E(PG_DIAG_INTERNAL_QUERY, "internalQuery");
+  SET_E(PG_DIAG_CONTEXT, "context");
+  SET_E(PG_DIAG_SCHEMA_NAME, "schemaName");
+  SET_E(PG_DIAG_TABLE_NAME, "tableName");
+  SET_E(PG_DIAG_COLUMN_NAME, "columnName");
+  SET_E(PG_DIAG_DATATYPE_NAME, "dataTypeName");
+  SET_E(PG_DIAG_CONSTRAINT_NAME, "constraintName");
+  SET_E(PG_DIAG_SOURCE_FILE, "sourceFile");
+  SET_E(PG_DIAG_SOURCE_LINE, "sourceLine");
+  SET_E(PG_DIAG_SOURCE_FUNCTION, "sourceFunction");
+  NanReturnValue(result);
+}
+
 NAN_METHOD(Connection::SendQuery) {
   NanScope();
   TRACE("Connection::SendQuery");

@@ -12,6 +12,7 @@ void InitAddon(v8::Handle<v8::Object> exports) {
   NODE_SET_PROTOTYPE_METHOD(tpl, "$connect", Connection::Connect);
   NODE_SET_PROTOTYPE_METHOD(tpl, "$finish", Connection::Finish);
   NODE_SET_PROTOTYPE_METHOD(tpl, "$getLastErrorMessage", Connection::GetLastErrorMessage);
+  NODE_SET_PROTOTYPE_METHOD(tpl, "$resultErrorFields", Connection::ResultErrorFields);
   NODE_SET_PROTOTYPE_METHOD(tpl, "$socket", Connection::Socket);
 
   //sync query functions
