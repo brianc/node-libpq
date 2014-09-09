@@ -175,6 +175,10 @@ PQ.prototype.resultErrorMessage = function() {
   return this.$resultErrorMessage();
 };
 
+PQ.prototype.resultErrorFields = function() {
+  return this.$resultErrorFields();
+};
+
 //free the memory associated with a result
 //this is somewhat handled for you within the c/c++ code
 //by never allowing the code to 'leak' a result. still,

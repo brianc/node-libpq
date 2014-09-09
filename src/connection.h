@@ -28,6 +28,7 @@ class Connection : public node::ObjectWrap {
     static NAN_METHOD(CmdTuples);
     static NAN_METHOD(ResultStatus);
     static NAN_METHOD(ResultErrorMessage);
+    static NAN_METHOD(ResultErrorFields);
     static NAN_METHOD(SendQuery);
     static NAN_METHOD(SendQueryParams);
     static NAN_METHOD(SendPrepare);

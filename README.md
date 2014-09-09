@@ -141,6 +141,14 @@ Returns either `PGRES_COMMAND_OK` or `PGRES_FATAL_ERROR` depending on the status
 
 Retrieves the error message from the result.  This will return `null` if the result does not have an error.
 
+##### `pq.resultErrorFields():object`
+
+Retrieves detailed error information from the current result object. Very similar to `PQresultErrorField()` except instead of passing a fieldCode and retrieving a single field, retrieves all fields from the error at once on a single object.  The object returned is a simple hash, _not_ an instance of an error object.  Example: if you wanted to access `PG_DIAG_MESSAGE_DETAIL` you would do the following:
+
+```js
+console.log(pq.errorFields().messageDetail)
+```
+
 ##### `pq.clear()`
 
 Manually frees the memory associated with a `PGresult` pointer.  Generally this is called for you, but if you absolutely want to free the pointer yourself, you can.
