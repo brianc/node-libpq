@@ -38,7 +38,7 @@ describe('error info', function() {
       assert.equal(err.dataTypeName, undefined);
       assert.equal(err.constraintName, undefined);
       assert.equal(err.sourceFile, "parse_target.c");
-      assert.equal(err.sourceLine, "510");
+      assert(parseInt(err.sourceLine));
       assert.equal(err.sourceFunction, "transformAssignedExpr");
     });
   });
