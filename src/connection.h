@@ -51,9 +51,9 @@ class Connection : public node::ObjectWrap {
 
     bool ConnectDB(const char* paramString);
     char* ErrorMessage();
+    PGconn* pq;
 
   private:
-    PGconn* pq;
     PGresult* lastResult;
     uv_poll_t read_watcher;
     uv_poll_t write_watcher;
@@ -73,7 +73,6 @@ class Connection : public node::ObjectWrap {
     static char** NewCStringArray(v8::Handle<v8::Array> jsParams);
     static void DeleteCStringArray(char** array, int length);
     void Emit(const char* message);
-
 };
 
 #endif
