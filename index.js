@@ -31,6 +31,9 @@ PQ.prototype.connect = function(paramString, cb) {
     paramString = '';
   }
   assert(cb, 'Must provide a connection callback');
+  if(process.domain) {
+    cb = process.domain.bind(cb);
+  }
   this.$connect(paramString, cb);
 };
 

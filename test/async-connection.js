@@ -24,4 +24,17 @@ describe('async connection', function() {
       done();
     });
   });
+
+  it('respects the active domain', function(done) {
+    var pq = new PQ();
+    var domain = require('domain').create();
+    domain.run(function() {
+      var activeDomain = process.domain;
+      assert(activeDomain, 'Should have an active domain');
+      pq.connect(function(err) {
+        assert.strictEqual(process.domain, activeDomain, 'Active domain is lost');
+        done();
+      });
+    });
+  });
 });
