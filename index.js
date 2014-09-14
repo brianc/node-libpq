@@ -1,5 +1,12 @@
 var PQ = module.exports = require('bindings')('addon.node').PQ;
 
+//print out the include dir
+//if you want to include this in a binding.gyp file
+if(!module.parent) {
+  var path = require('path');
+  console.log(path.normalize(__dirname + '/src'));
+}
+
 var EventEmitter = require('events').EventEmitter;
 var assert = require('assert');
 
