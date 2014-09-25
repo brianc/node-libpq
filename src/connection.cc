@@ -6,12 +6,14 @@ Connection::Connection() : ObjectWrap() {
   lastResult = NULL;
   read_watcher.data = this;
   write_watcher.data = this;
+  is_reading = false;
 }
 
 Connection::~Connection() {
   LOG("Destructor");
   //if we forgot to clean things up manually
   //make sure we clean up all our data
+  this->ReadStop();
   ClearLastResult();
   if(pq != NULL) {
     PQfinish(pq);
@@ -767,6 +769,7 @@ void Connection::on_io_readable(uv_poll_t* handle, int status, int revents) {
   if(revents & UV_READABLE) {
     LOG("Connection::on_io_readable UV_READABLE");
     Connection* self = (Connection*) handle->data;
+    LOG("Got connection pointer");
     self->Emit("readable");
   }
 }
@@ -785,12 +788,15 @@ void Connection::on_io_writable(uv_poll_t* handle, int status, int revents) {
 
 void Connection::ReadStart() {
   LOG("Connection::ReadStart:starting read watcher");
+  is_reading = true;
   uv_poll_start(&read_watcher, UV_READABLE, on_io_readable);
   LOG("Connection::ReadStart:started read watcher");
 }
 
 void Connection::ReadStop() {
   LOG("Connection::ReadStop:stoping read watcher");
+  if(!is_reading) return;
+  is_reading = false;
   uv_poll_stop(&read_watcher);
   LOG("Connection::ReadStop:stopped read watcher");
 }
@@ -862,7 +868,9 @@ void Connection::DeleteCStringArray(char** array, int length) {
 void Connection::Emit(const char* message) {
   NanScope();
 
+  TRACE("ABOUT TO EMIT EVENT");
   v8::Local<v8::Object> jsInstance = NanObjectWrapHandle(this);
+  TRACE("GETTING 'emit' FUNCTION INSTANCE");
   v8::Local<v8::Value> emit_v = jsInstance->Get(NanNew<v8::String>("emit"));
   assert(emit_v->IsFunction());
   v8::Local<v8::Function> emit_f = emit_v.As<v8::Function>();
@@ -870,6 +878,7 @@ void Connection::Emit(const char* message) {
   v8::Local<v8::String> eventName = NanNew<v8::String>(message);
   v8::Handle<v8::Value> args[1] = { eventName };
 
+  TRACE("CALLING EMIT");
   v8::TryCatch tc;
   emit_f->Call(NanObjectWrapHandle(this), 1, args);
   if(tc.HasCaught()) {

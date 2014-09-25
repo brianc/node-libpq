@@ -57,6 +57,7 @@ class Connection : public node::ObjectWrap {
     PGresult* lastResult;
     uv_poll_t read_watcher;
     uv_poll_t write_watcher;
+    bool is_reading;
 
     Connection();
     ~Connection();
