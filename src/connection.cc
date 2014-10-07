@@ -13,6 +13,7 @@ Connection::~Connection() {
   LOG("Destructor");
   //if we forgot to clean things up manually
   //make sure we clean up all our data
+  assert(!is_reading);
   this->ReadStop();
   ClearLastResult();
   if(pq != NULL) {
@@ -536,6 +537,7 @@ NAN_METHOD(Connection::StartRead) {
 
   Connection* self = THIS();
 
+  self->Ref();
   self->ReadStart();
 
   NanReturnUndefined();
@@ -547,6 +549,7 @@ NAN_METHOD(Connection::StopRead) {
 
   Connection* self = THIS();
 
+  self->Unref();
   self->ReadStop();
 
   NanReturnUndefined();
