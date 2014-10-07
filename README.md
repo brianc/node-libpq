@@ -284,7 +284,9 @@ Exact copy of the `PQescapeIdentifier` function within libpq.  Requires an estab
 $ npm test
 ```
 
-To run the tests you need a PostgreSQL backend reachable by typing `psql` with no connection parameters in your terminal. The tests use [environment variables](http://www.postgresql.org/docs/9.3/static/libpq-envars.html) to connect via libpq's built in mechanism to use them. An example of supplying a specific host to connect to to run the tests is:
+To run the tests you need a PostgreSQL backend reachable by typing `psql` with no connection parameters in your terminal. The tests use [environment variables](http://www.postgresql.org/docs/9.3/static/libpq-envars.html) to connect to the backend. 
+
+An example of supplying a specific host the tests:
 
 ```sh
 $ PGHOST=blabla.mydatabasehost.com npm test
