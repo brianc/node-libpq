@@ -278,6 +278,10 @@ Exact copy of the `PQescapeLiteral` function within libpq.  Requires an establis
 
 Exact copy of the `PQescapeIdentifier` function within libpq.  Requires an established connection but does not perform any I/O.
 
+##### `pq.cancel():true -or- string`
+
+Issues a request to cancel the currently executing query _on this instance of libpq_.  Returns `true` if the cancel request was sent.  Returns a `string` error message if the cancel request failed for any reason. The string will contain the error message provided by libpq.
+
 ## testing
 
 ```sh
