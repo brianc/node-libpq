@@ -48,6 +48,7 @@ class Connection : public node::ObjectWrap {
     static NAN_METHOD(PutCopyData);
     static NAN_METHOD(PutCopyEnd);
     static NAN_METHOD(GetCopyData);
+    static NAN_METHOD(Cancel);
 
     bool ConnectDB(const char* paramString);
     char* ErrorMessage();

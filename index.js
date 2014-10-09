@@ -342,3 +342,7 @@ PQ.prototype.putCopyEnd = function(errorMessage) {
 PQ.prototype.getCopyData = function(async) {
   return this.$getCopyData(!!async);
 };
+
+PQ.prototype.cancel = function() {
+  return this.$cancel();
+};

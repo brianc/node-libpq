@@ -63,6 +63,9 @@ void InitAddon(v8::Handle<v8::Object> exports) {
   NODE_SET_PROTOTYPE_METHOD(tpl, "$putCopyEnd", Connection::PutCopyEnd);
   NODE_SET_PROTOTYPE_METHOD(tpl, "$getCopyData", Connection::GetCopyData);
 
+  //Cancel
+  NODE_SET_PROTOTYPE_METHOD(tpl, "$cancel", Connection::Cancel);
+
   exports->Set(NanNew<v8::String>("PQ"), tpl->GetFunction());
 }
 

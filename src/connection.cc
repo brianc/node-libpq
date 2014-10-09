@@ -743,6 +743,37 @@ NAN_METHOD(Connection::GetCopyData) {
   NanReturnValue(nodeBuffer);
 }
 
+NAN_METHOD(Connection::Cancel) {
+  NanScope();
+
+  LOG("Connection::Cancel");
+
+  Connection* self = THIS();
+
+  PGcancel *cancelStuct = PQgetCancel(self->pq);
+
+  if(cancelStuct == NULL) {
+    NanReturnValue(NanNew<v8::String>("Unable to allocate cancel struct"));
+  }
+
+  char* errBuff = new char[255];
+
+  LOG("PQcancel");
+  int result = PQcancel(cancelStuct, errBuff, 255);
+
+  LOG("PQfreeCancel");
+  PQfreeCancel(cancelStuct);
+
+  if(result == 1) {
+    delete errBuff;
+    NanReturnValue(NanTrue());
+  }
+
+  v8::Local<v8::Value> errorMessage = NanNew<v8::String>(errBuff);
+  delete errBuff;
+  NanReturnValue(errorMessage);
+}
+
 bool Connection::ConnectDB(const char* paramString) {
   TRACEF("Connection::ConnectDB:Connection parameters: %s\n", paramString);
   this->pq = PQconnectdb(paramString);
