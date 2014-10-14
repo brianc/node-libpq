@@ -8,7 +8,7 @@ If you have a good understanding of libpq or used it before hopefully the method
 
 I am also building some [higher level abstractions](https://github.com/brianc/node-pg-native) to eventually replace the `pg.native` portion of node-postgres.  They should help as reference material.
 
-This module relies heavily on [https://github.com/rvagg/nan] and wouldn't really be possible without it. Mucho thanks to the node-nan team.
+This module relies heavily on [nan](https://github.com/rvagg/nan) and wouldn't really be possible without it. Mucho thanks to the node-nan team.
 
 ## install
 
