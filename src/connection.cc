@@ -381,11 +381,13 @@ NAN_METHOD(Connection::ResultErrorFields) {
   SET_E(PG_DIAG_INTERNAL_POSITION, "internalPosition");
   SET_E(PG_DIAG_INTERNAL_QUERY, "internalQuery");
   SET_E(PG_DIAG_CONTEXT, "context");
+#ifdef ESCAPE_SUPPORTED
   SET_E(PG_DIAG_SCHEMA_NAME, "schemaName");
   SET_E(PG_DIAG_TABLE_NAME, "tableName");
   SET_E(PG_DIAG_COLUMN_NAME, "columnName");
   SET_E(PG_DIAG_DATATYPE_NAME, "dataTypeName");
   SET_E(PG_DIAG_CONSTRAINT_NAME, "constraintName");
+#endif
   SET_E(PG_DIAG_SOURCE_FILE, "sourceFile");
   SET_E(PG_DIAG_SOURCE_LINE, "sourceLine");
   SET_E(PG_DIAG_SOURCE_FUNCTION, "sourceFunction");
@@ -599,6 +601,7 @@ NAN_METHOD(Connection::Flush) {
   NanReturnValue(NanNew<v8::Number>(status));
 }
 
+#ifdef ESCAPE_SUPPORTED
 NAN_METHOD(Connection::EscapeLiteral) {
   NanScope();
   TRACE("Connection::EscapeLiteral");
@@ -654,6 +657,7 @@ NAN_METHOD(Connection::EscapeIdentifier) {
 
   NanReturnValue(toReturn);
 }
+#endif
 
 NAN_METHOD(Connection::Notifies) {
   NanScope();

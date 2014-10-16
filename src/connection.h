@@ -42,8 +42,10 @@ class Connection : public node::ObjectWrap {
     static NAN_METHOD(SetNonBlocking);
     static NAN_METHOD(IsNonBlocking);
     static NAN_METHOD(Flush);
+#ifdef ESCAPE_SUPPORTED
     static NAN_METHOD(EscapeLiteral);
     static NAN_METHOD(EscapeIdentifier);
+#endif
     static NAN_METHOD(Notifies);
     static NAN_METHOD(PutCopyData);
     static NAN_METHOD(PutCopyEnd);
