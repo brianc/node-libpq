@@ -16,4 +16,19 @@ describe('without being connected', function() {
     assert.equal(pq.resultStatus(), 'PGRES_FATAL_ERROR');
     assert(pq.errorMessage());
   });
+
+  it('throws when reading while not connected', function() {
+    var pq = new PQ();
+    assert.throws(function() {
+      pq.startReader();
+    });
+  });
+
+  it('throws when writing while not connected', function() {
+    var pq = new PQ();
+    assert.throws(function() {
+      pq.writable(function() {
+      });
+    });
+  });
 })

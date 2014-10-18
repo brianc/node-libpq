@@ -5,9 +5,11 @@ var assert = require('assert');
 describe('async connection', function() {
   it('works', function(done) {
     var pq = new PQ();
+    assert(!pq.connected, 'should have connected set to falsy');
     pq.connect(function(err) {
       assert.ifError(err);
       pq.exec('SELECT NOW()');
+      assert.equal(pq.connected, true, 'should have connected set to true');
       assert.equal(pq.ntuples(), 1);
       done();
     });

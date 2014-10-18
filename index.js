@@ -17,6 +17,7 @@ for(var key in EventEmitter.prototype) {
 //SYNC connects to the server
 //throws an exception in the event of a connection error
 PQ.prototype.connectSync = function(paramString) {
+  this.connected = true;
   if(!paramString) {
     paramString = '';
   }
@@ -30,6 +31,7 @@ PQ.prototype.connectSync = function(paramString) {
 //connects async using a background thread
 //calls the callback with an error if there was one
 PQ.prototype.connect = function(paramString, cb) {
+  this.connected = true;
   if(typeof paramString == 'function') {
     cb = paramString;
     paramString = '';
@@ -55,6 +57,7 @@ PQ.prototype.socket = function() {
 
 //finishes the connection & closes it
 PQ.prototype.finish = function() {
+  this.connected = false;
   this.$finish();
 };
 
@@ -246,6 +249,7 @@ PQ.prototype.cmdTuples = function() {
 //PQ#consumeInput instead of letting node pull the data off the socket
 //http://www.postgresql.org/docs/9.1/static/libpq-async.html
 PQ.prototype.startReader = function() {
+  assert(this.connected, 'Must be connected to start reader');
   this.$startRead();
 };
 
@@ -255,6 +259,7 @@ PQ.prototype.stopReader = function() {
 };
 
 PQ.prototype.writable = function(cb) {
+  assert(this.connected, 'Must be connected to start writer');
   this.$startWrite();
   return this.once('writable', cb);
 };

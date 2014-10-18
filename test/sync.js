@@ -18,8 +18,13 @@ describe('connecting with no credentials', function() {
     this.pq.connectSync();
   });
 
+  it('is connected', function() {
+    assert(this.pq.connected, 'should have connected == true');
+  });
+
   after(function() {
     this.pq.finish();
+    assert(!this.pq.connected);
   });
 });
 
