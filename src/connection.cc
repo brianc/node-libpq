@@ -688,7 +688,7 @@ NAN_METHOD(Connection::PutCopyData) {
 
   Connection* self = THIS();
 
-  v8::Handle<v8::Value> buffer = args[0];
+  v8::Handle<v8::Object> buffer = args[0].As<v8::Object>();
 
   char* data = node::Buffer::Data(buffer);
   int length = node::Buffer::Length(buffer);
