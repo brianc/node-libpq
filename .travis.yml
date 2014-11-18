@@ -3,5 +3,7 @@ node_js:
   - "0.8"
   - "0.10"
   - "0.11"
+before_install:
+  npm i npm --global
 env:
   - PGUSER=postgres PGDATABASE=postgres
