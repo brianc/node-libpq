@@ -381,7 +381,7 @@ NAN_METHOD(Connection::ResultErrorFields) {
   SET_E(PG_DIAG_INTERNAL_POSITION, "internalPosition");
   SET_E(PG_DIAG_INTERNAL_QUERY, "internalQuery");
   SET_E(PG_DIAG_CONTEXT, "context");
-#ifdef ESCAPE_SUPPORTED
+#ifdef MORE_ERROR_FIELDS_SUPPORTED
   SET_E(PG_DIAG_SCHEMA_NAME, "schemaName");
   SET_E(PG_DIAG_TABLE_NAME, "tableName");
   SET_E(PG_DIAG_COLUMN_NAME, "columnName");

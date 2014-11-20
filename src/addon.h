@@ -10,6 +10,10 @@
 #define ESCAPE_SUPPORTED
 #endif
 
+#if PG_VERSION_NUM >= 93000
+#define MORE_ERROR_FIELDS_SUPPORTED
+#endif
+
 #include "connection.h"
 #include "connect-async-worker.h"
 
