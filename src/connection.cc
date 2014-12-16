@@ -7,6 +7,7 @@ Connection::Connection() : ObjectWrap() {
   read_watcher.data = this;
   write_watcher.data = this;
   is_reading = false;
+  is_reffed = false;
 }
 
 Connection::~Connection() {
@@ -40,6 +41,7 @@ NAN_METHOD(Connection::ConnectSync) {
   char* paramString = NewCString(args[0]);
 
   self->Ref();
+  self->is_reffed = true;
   bool success = self->ConnectDB(paramString);
 
   delete[] paramString;
@@ -63,6 +65,7 @@ NAN_METHOD(Connection::Connect) {
   ConnectAsyncWorker* worker = new ConnectAsyncWorker(paramString, self, nanCallback);
   LOG("Instantiated worker, running it...");
   self->Ref();
+  self->is_reffed = true;
   NanAsyncQueueWorker(worker);
 
   NanReturnUndefined();
@@ -98,7 +101,10 @@ NAN_METHOD(Connection::Finish) {
   self->ClearLastResult();
   PQfinish(self->pq);
   self->pq = NULL;
-  self->Unref();
+  if(self->is_reffed) {
+    self->is_reffed = false;
+    self->Unref();
+  }
 
   NanReturnUndefined();
 }
