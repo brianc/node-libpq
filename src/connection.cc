@@ -10,18 +10,6 @@ Connection::Connection() : ObjectWrap() {
   is_reffed = false;
 }
 
-Connection::~Connection() {
-  LOG("Destructor");
-  //if we forgot to clean things up manually
-  //make sure we clean up all our data
-  //assert(!is_reading);
-  //this->ReadStop();
-  //ClearLastResult();
-  //if(pq != NULL) {
-    //PQfinish(pq);
-  //}
-}
-
 NAN_METHOD(Connection::Create) {
   NanScope();
 
