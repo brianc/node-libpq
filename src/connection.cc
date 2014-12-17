@@ -7,18 +7,7 @@ Connection::Connection() : ObjectWrap() {
   read_watcher.data = this;
   write_watcher.data = this;
   is_reading = false;
-}
-
-Connection::~Connection() {
-  LOG("Destructor");
-  //if we forgot to clean things up manually
-  //make sure we clean up all our data
-  assert(!is_reading);
-  this->ReadStop();
-  ClearLastResult();
-  if(pq != NULL) {
-    PQfinish(pq);
-  }
+  is_reffed = false;
 }
 
 NAN_METHOD(Connection::Create) {
@@ -38,6 +27,9 @@ NAN_METHOD(Connection::ConnectSync) {
   Connection *self = ObjectWrap::Unwrap<Connection>(args.This());
 
   char* paramString = NewCString(args[0]);
+
+  self->Ref();
+  self->is_reffed = true;
   bool success = self->ConnectDB(paramString);
 
   delete[] paramString;
@@ -60,6 +52,8 @@ NAN_METHOD(Connection::Connect) {
   LOG("About to instantiate worker");
   ConnectAsyncWorker* worker = new ConnectAsyncWorker(paramString, self, nanCallback);
   LOG("Instantiated worker, running it...");
+  self->Ref();
+  self->is_reffed = true;
   NanAsyncQueueWorker(worker);
 
   NanReturnUndefined();
@@ -91,9 +85,14 @@ NAN_METHOD(Connection::Finish) {
 
   Connection *self = THIS();
 
+  self->ReadStop();
   self->ClearLastResult();
   PQfinish(self->pq);
   self->pq = NULL;
+  if(self->is_reffed) {
+    self->is_reffed = false;
+    self->Unref();
+  }
 
   NanReturnUndefined();
 }
@@ -539,7 +538,6 @@ NAN_METHOD(Connection::StartRead) {
 
   Connection* self = THIS();
 
-  self->Ref();
   self->ReadStart();
 
   NanReturnUndefined();
@@ -551,7 +549,6 @@ NAN_METHOD(Connection::StopRead) {
 
   Connection* self = THIS();
 
-  self->Unref();
   self->ReadStop();
 
   NanReturnUndefined();

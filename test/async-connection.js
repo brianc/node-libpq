@@ -1,7 +1,6 @@
 var PQ = require('../')
 var assert = require('assert');
 
-
 describe('async connection', function() {
   it('works', function(done) {
     var pq = new PQ();
