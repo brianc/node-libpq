@@ -16,7 +16,8 @@ describe('async connection', function() {
 
   it('works with hard-coded connection parameters', function(done) {
     var pq = new PQ();
-    pq.connect('host=localhost', done);
+    var conString ='host=' + (process.env.PGHOST || 'localhost')
+    pq.connect(conString, done);
   });
 
   it('returns an error to the callback if connection fails', function(done) {
