@@ -12,7 +12,6 @@ ConnectAsyncWorker::ConnectAsyncWorker(char* paramString, Connection* conn, NanC
     TRACE("ConnectAsyncWorker::Execute");
 
     bool success = conn->ConnectDB(paramString);
-    delete[] paramString;
 
     if(!success) {
       SetErrorMessage(conn->ErrorMessage());
