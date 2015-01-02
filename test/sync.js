@@ -6,6 +6,7 @@ describe('connecting with bad credentials', function() {
     try {
       new PQ().connectSync('asldkfjlasdf');
     } catch(e) {
+      assert.equal(e.toString().indexOf('connection pointer is NULL'), -1)
       return;
     }
     assert.fail('Should have thrown an exception');

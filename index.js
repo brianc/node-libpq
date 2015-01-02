@@ -23,8 +23,9 @@ PQ.prototype.connectSync = function(paramString) {
   }
   var connected = this.$connectSync(paramString);
   if(!connected) {
+    var err = new Error(this.errorMessage());
     this.finish();
-    throw new Error(this.errorMessage());
+    throw err;
   }
 };
 
