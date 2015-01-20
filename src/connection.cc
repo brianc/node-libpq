@@ -91,7 +91,7 @@ NAN_METHOD(Connection::Finish) {
   self->pq = NULL;
   if(self->is_reffed) {
     self->is_reffed = false;
-    self->Unref();
+    //self->Unref();
   }
 
   NanReturnUndefined();
