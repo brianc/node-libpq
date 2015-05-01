@@ -1,4 +1,24 @@
 {
+  'conditions': [
+    ['OS=="win"', {
+      'variables': {
+        'pgconfig': '<!@(cmd /C where /Q pg_config)'
+      }
+     }
+    ],
+    ['OS=="linux"', {
+      'variables' : {
+        # Find the pull path to the pg_config command, since iy may not be on the PATH
+        'pgconfig': '<!(find /usr/bin /usr/local/bin /usr/pg* /opt -executable -name pg_config -print -quit)'
+      }
+     }, {
+      #Default to assuming pg_config is on the PATH.
+      'variables': {
+        'pgconfig': 'pg_config'
+      }
+     }
+    ]
+  ],
   'targets': [
     {
       'target_name': 'addon',
@@ -8,33 +28,21 @@
         'src/addon.cc'
       ],
       'include_dirs': [
-        '<!@(pg_config --includedir)',
+        '<!@(<(pgconfig) --includedir)',
         '<!(node -e "require(\'nan\')")'
       ],
       'conditions' : [
         ['OS=="win"', {
-          'conditions' : [
-            ['"<!@(cmd /C where /Q pg_config || echo n)"!="n"',
-              {
-                'libraries' : ['libpq.lib'],
-                'msvs_settings': {
-                  'VCLinkerTool' : {
-                    'AdditionalLibraryDirectories' : [
-                      '<!@(pg_config --libdir)\\'
-                    ]
-                  },
-                }
-              }
-            ]
-          ]
+          'libraries' : ['libpq.lib'],
+          'msvs_settings': {
+            'VCLinkerTool' : {
+              'AdditionalLibraryDirectories' : [
+                '<!@(<(pgconfig) --libdir)\\'
+              ]
+            },
+          }
         }, { # OS!="win"
-          'conditions' : [
-            ['"y"!="n"', # ToDo: add pg_config existance condition that works on linux
-              {
-                'libraries' : ['-lpq -L<!@(pg_config --libdir)']
-              }
-            ]
-          ]
+          'libraries' : ['-lpq -L<!@(<(pgconfig) --libdir)']
         }]
       ]
     }
