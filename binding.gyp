@@ -9,7 +9,7 @@
     ['OS=="linux"', {
       'variables' : {
         # Find the pull path to the pg_config command, since iy may not be on the PATH
-        'pgconfig': '<!(find /usr/bin /usr/local/bin /usr/pg* /opt -executable -name pg_config -print -quit)'
+        'pgconfig': '<!(which pg_config || find /usr/bin /usr/local/bin /usr/pg* /opt -executable -name pg_config -print -quit)'
       }
      }, {
       #Default to assuming pg_config is on the PATH.
