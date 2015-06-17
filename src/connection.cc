@@ -789,6 +789,8 @@ bool Connection::ConnectDB(const char* paramString) {
   uv_poll_init(uv_default_loop(), &(this->read_watcher), fd);
   uv_poll_init(uv_default_loop(), &(this->write_watcher), fd);
 
+  PQsetNoticeProcessor(this->pq, NoticeProcessor, (void *) this);
+
   TRACE("Connection::ConnectSync::Success");
   return true;
 }
@@ -900,7 +902,11 @@ void Connection::DeleteCStringArray(char** array, int length) {
   delete [] array;
 }
 
-void Connection::Emit(const char* message) {
+void Connection::Emit(const char* event) {
+    this->EmitMessage(event, "");
+}
+
+void Connection::EmitMessage(const char* event, const char* message) {
   NanScope();
 
   TRACE("ABOUT TO EMIT EVENT");
@@ -910,13 +916,21 @@ void Connection::Emit(const char* message) {
   assert(emit_v->IsFunction());
   v8::Local<v8::Function> emit_f = emit_v.As<v8::Function>();
 
-  v8::Local<v8::String> eventName = NanNew<v8::String>(message);
-  v8::Handle<v8::Value> args[1] = { eventName };
+  v8::Local<v8::String> eventName = NanNew<v8::String>(event);
+  v8::Local<v8::String> eventMessage = NanNew<v8::String>(message);
+  v8::Handle<v8::Value> args[2] = { eventName, eventMessage };
 
   TRACE("CALLING EMIT");
   v8::TryCatch tc;
-  emit_f->Call(NanObjectWrapHandle(this), 1, args);
+  emit_f->Call(NanObjectWrapHandle(this), 2, args);
   if(tc.HasCaught()) {
     node::FatalException(tc);
   }
+}
+
+void Connection::NoticeProcessor(void *arg, const char *message)
+{
+  fprintf(stderr, "%s", message);
+
+  ((Connection *) arg)->EmitMessage("notice", message);
 }
