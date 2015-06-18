@@ -76,7 +76,9 @@ class Connection : public node::ObjectWrap {
     static char* NewCString(v8::Handle<v8::Value> val);
     static char** NewCStringArray(v8::Handle<v8::Array> jsParams);
     static void DeleteCStringArray(char** array, int length);
-    void Emit(const char* message);
+    void Emit(const char* event);
+    void EmitMessage(const char* event, const char* message);
+    static void NoticeProcessor(void *arg, const char *message);
 };
 
 #endif
