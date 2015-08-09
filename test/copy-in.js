@@ -23,7 +23,7 @@ describe('COPY IN', function() {
     while(this.pq.getResult()) {}
 
     this.pq.exec('SELECT COUNT(*) FROM test_data');
-    assert.equal(this.pq.getvalue(0, 0), 4);
+    assert.equal(this.pq.getvalue(0, 0), 3);
   });
 
   it('can cancel copy data in', function() {
@@ -42,6 +42,6 @@ describe('COPY IN', function() {
     assert(this.pq.errorMessage().indexOf('cancel!') > -1, this.pq.errorMessage() + ' should have contained "cancel!"');
 
     this.pq.exec('SELECT COUNT(*) FROM test_data');
-    assert.equal(this.pq.getvalue(0, 0), 4);
+    assert.equal(this.pq.getvalue(0, 0), 3);
   });
 });
