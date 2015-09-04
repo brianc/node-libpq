@@ -20,12 +20,12 @@ describe('async connection', function() {
     pq.connect(conString, done);
   });
 
-/*  it('returns an error to the callback if connection fails', function(done) {
+  it('returns an error to the callback if connection fails', function(done) {
     new PQ().connect('host=asldkfjasldkfjalskdfjasdf', function(err) {
       assert(err, 'should have passed an error');
       done();
     });
-  });*/
+  });
 
   it('respects the active domain', function(done) {
     var pq = new PQ();
