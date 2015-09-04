@@ -589,12 +589,14 @@ NAN_METHOD(Connection::PutCopyEnd) {
   //optional error message
 
   bool sendErrorMessage = info.Length() > 0;
-  Nan::Utf8String msg(info[0]);
+  int result;
   if(sendErrorMessage) {
+    Nan::Utf8String msg(info[0]);
     TRACEF("Connection::PutCopyEnd:%s\n", *msg);
+    result = PQputCopyEnd(self->pq, *msg);
+  } else {
+    result = PQputCopyEnd(self->pq, NULL);
   }
-
-  int result = PQputCopyEnd(self->pq, *msg);
 
   info.GetReturnValue().Set(result);
 }
