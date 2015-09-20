@@ -4,6 +4,6 @@ node_js:
   - "0.12"
   - "4.1"
 before_install:
-  npm i npm --global
+  - npm install npm --global
 env:
   - CC=clang CXX=clang++ npm_config_clang=1 PGUSER=postgres PGDATABASE=postgres
