@@ -284,6 +284,10 @@ Exact copy of the `PQescapeIdentifier` function within libpq.  Requires an estab
 
 Issues a request to cancel the currently executing query _on this instance of libpq_.  Returns `true` if the cancel request was sent.  Returns a `string` error message if the cancel request failed for any reason. The string will contain the error message provided by libpq.
 
+##### `pq.serverVersion():number`
+
+Returns the version of the connected PostgreSQL backend server as a number.
+
 ## testing
 
 ```sh
