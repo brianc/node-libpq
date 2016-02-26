@@ -786,8 +786,8 @@ bool Connection::ConnectDB(const char* paramString) {
   }
 
   int fd = PQsocket(this->pq);
-  uv_poll_init(uv_default_loop(), &(this->read_watcher), fd);
-  uv_poll_init(uv_default_loop(), &(this->write_watcher), fd);
+  uv_poll_init_socket(uv_default_loop(), &(this->read_watcher), fd);
+  uv_poll_init_socket(uv_default_loop(), &(this->write_watcher), fd);
 
   PQsetNoticeProcessor(this->pq, NoticeProcessor, (void *) this);
 
