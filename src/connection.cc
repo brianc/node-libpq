@@ -650,12 +650,12 @@ NAN_METHOD(Connection::Cancel) {
   PQfreeCancel(cancelStuct);
 
   if(result == 1) {
-    delete errBuff;
+    delete[] errBuff;
     return info.GetReturnValue().Set(true);
   }
 
   info.GetReturnValue().Set(Nan::New(errBuff).ToLocalChecked());
-  delete errBuff;
+  delete[] errBuff;
 }
 
 bool Connection::ConnectDB(const char* paramString) {
