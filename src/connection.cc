@@ -608,6 +608,10 @@ NAN_METHOD(Connection::PutCopyEnd) {
   info.GetReturnValue().Set(result);
 }
 
+static void FreeBuffer(char *buffer, void *) {
+  PQfreemem(buffer);
+}
+
 NAN_METHOD(Connection::GetCopyData) {
   LOG("Connection::GetCopyData");
 
@@ -625,8 +629,7 @@ NAN_METHOD(Connection::GetCopyData) {
     return info.GetReturnValue().Set(length);
   }
 
-  info.GetReturnValue().Set(Nan::CopyBuffer(buffer, length).ToLocalChecked());
-  PQfreemem(buffer);
+  info.GetReturnValue().Set(Nan::NewBuffer(buffer, length, FreeBuffer, NULL).ToLocalChecked());
 }
 
 NAN_METHOD(Connection::Cancel) {
