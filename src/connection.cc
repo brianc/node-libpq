@@ -33,7 +33,7 @@ NAN_METHOD(Connection::ConnectSync) {
 NAN_METHOD(Connection::Connect) {
   TRACE("Connection::Connect");
 
-  Connection* self = THIS();
+  Connection* self = NODE_THIS();
 
   v8::Local<v8::Function> callback = info[1].As<v8::Function>();
   LOG("About to make callback");
@@ -49,7 +49,7 @@ NAN_METHOD(Connection::Connect) {
 NAN_METHOD(Connection::Socket) {
   TRACE("Connection::Socket");
 
-  Connection *self = THIS();
+  Connection *self = NODE_THIS();
   int fd = PQsocket(self->pq);
   TRACEF("Connection::Socket::fd: %d\n", fd);
 
@@ -57,7 +57,7 @@ NAN_METHOD(Connection::Socket) {
 }
 
 NAN_METHOD(Connection::GetLastErrorMessage) {
-  Connection *self = THIS();
+  Connection *self = NODE_THIS();
   char* errorMessage = PQerrorMessage(self->pq);
 
   info.GetReturnValue().Set(Nan::New(errorMessage).ToLocalChecked());
@@ -66,7 +66,7 @@ NAN_METHOD(Connection::GetLastErrorMessage) {
 NAN_METHOD(Connection::Finish) {
   TRACE("Connection::Finish::finish");
 
-  Connection *self = THIS();
+  Connection *self = NODE_THIS();
 
   self->ReadStop();
   self->ClearLastResult();
@@ -80,13 +80,13 @@ NAN_METHOD(Connection::Finish) {
 
 NAN_METHOD(Connection::ServerVersion) {
   TRACE("Connection::ServerVersion");
-  Connection* self = THIS();
+  Connection* self = NODE_THIS();
   info.GetReturnValue().Set(PQserverVersion(self->pq));
 }
 
 
 NAN_METHOD(Connection::Exec) {
-  Connection *self = THIS();
+  Connection *self = NODE_THIS();
   Nan::Utf8String commandText(info[0]);
 
   TRACEF("Connection::Exec: %s\n", *commandText);
@@ -96,7 +96,7 @@ NAN_METHOD(Connection::Exec) {
 }
 
 NAN_METHOD(Connection::ExecParams) {
-  Connection *self = THIS();
+  Connection *self = NODE_THIS();
 
   Nan::Utf8String commandText(info[0]);
   TRACEF("Connection::Exec: %s\n", *commandText);
@@ -123,7 +123,7 @@ NAN_METHOD(Connection::ExecParams) {
 }
 
 NAN_METHOD(Connection::Prepare) {
-  Connection *self = THIS();
+  Connection *self = NODE_THIS();
 
   Nan::Utf8String statementName(info[0]);
   Nan::Utf8String commandText(info[1]);
@@ -143,7 +143,7 @@ NAN_METHOD(Connection::Prepare) {
 }
 
 NAN_METHOD(Connection::ExecPrepared) {
-  Connection *self = THIS();
+  Connection *self = NODE_THIS();
 
   Nan::Utf8String statementName(info[0]);
 
@@ -172,14 +172,14 @@ NAN_METHOD(Connection::ExecPrepared) {
 
 NAN_METHOD(Connection::Clear) {
   TRACE("Connection::Clear");
-  Connection *self = THIS();
+  Connection *self = NODE_THIS();
 
   self->ClearLastResult();
 }
 
 NAN_METHOD(Connection::Ntuples) {
   TRACE("Connection::Ntuples");
-  Connection *self = THIS();
+  Connection *self = NODE_THIS();
   PGresult* res = self->lastResult;
   int numTuples = PQntuples(res);
 
@@ -188,7 +188,7 @@ NAN_METHOD(Connection::Ntuples) {
 
 NAN_METHOD(Connection::Nfields) {
   TRACE("Connection::Nfields");
-  Connection *self = THIS();
+  Connection *self = NODE_THIS();
   PGresult* res = self->lastResult;
   int numFields = PQnfields(res);
 
@@ -197,7 +197,7 @@ NAN_METHOD(Connection::Nfields) {
 
 NAN_METHOD(Connection::Fname) {
   TRACE("Connection::Fname");
-  Connection *self = THIS();
+  Connection *self = NODE_THIS();
 
   PGresult* res = self->lastResult;
 
@@ -212,7 +212,7 @@ NAN_METHOD(Connection::Fname) {
 
 NAN_METHOD(Connection::Ftype) {
   TRACE("Connection::Ftype");
-  Connection *self = THIS();
+  Connection *self = NODE_THIS();
 
   PGresult* res = self->lastResult;
 
@@ -223,7 +223,7 @@ NAN_METHOD(Connection::Ftype) {
 
 NAN_METHOD(Connection::Getvalue) {
   TRACE("Connection::Getvalue");
-  Connection *self = THIS();
+  Connection *self = NODE_THIS();
 
   PGresult* res = self->lastResult;
 
@@ -241,7 +241,7 @@ NAN_METHOD(Connection::Getvalue) {
 
 NAN_METHOD(Connection::Getisnull) {
   TRACE("Connection::Getisnull");
-  Connection *self = THIS();
+  Connection *self = NODE_THIS();
 
   PGresult* res = self->lastResult;
 
@@ -255,7 +255,7 @@ NAN_METHOD(Connection::Getisnull) {
 
 NAN_METHOD(Connection::CmdStatus) {
   TRACE("Connection::CmdStatus");
-  Connection *self = THIS();
+  Connection *self = NODE_THIS();
 
   PGresult* res = self->lastResult;
   char* status = PQcmdStatus(res);
@@ -265,7 +265,7 @@ NAN_METHOD(Connection::CmdStatus) {
 
 NAN_METHOD(Connection::CmdTuples) {
   TRACE("Connection::CmdTuples");
-  Connection *self = THIS();
+  Connection *self = NODE_THIS();
 
   PGresult* res = self->lastResult;
   char* tuples = PQcmdTuples(res);
@@ -275,7 +275,7 @@ NAN_METHOD(Connection::CmdTuples) {
 
 NAN_METHOD(Connection::ResultStatus) {
   TRACE("Connection::ResultStatus");
-  Connection *self = THIS();
+  Connection *self = NODE_THIS();
 
   PGresult* res = self->lastResult;
 
@@ -286,7 +286,7 @@ NAN_METHOD(Connection::ResultStatus) {
 
 NAN_METHOD(Connection::ResultErrorMessage) {
   TRACE("Connection::ResultErrorMessage");
-  Connection *self = THIS();
+  Connection *self = NODE_THIS();
 
   PGresult* res = self->lastResult;
 
@@ -303,7 +303,7 @@ NAN_METHOD(Connection::ResultErrorMessage) {
   }
 
 NAN_METHOD(Connection::ResultErrorFields) {
-  Connection *self = THIS();
+  Connection *self = NODE_THIS();
 
   if(self->lastResult == NULL) {
     return info.GetReturnValue().SetNull();
@@ -336,7 +336,7 @@ NAN_METHOD(Connection::ResultErrorFields) {
 NAN_METHOD(Connection::SendQuery) {
   TRACE("Connection::SendQuery");
 
-  Connection *self = THIS();
+  Connection *self = NODE_THIS();
   Nan::Utf8String commandText(info[0]);
 
   TRACEF("Connection::SendQuery: %s\n", *commandText);
@@ -348,7 +348,7 @@ NAN_METHOD(Connection::SendQuery) {
 NAN_METHOD(Connection::SendQueryParams) {
   TRACE("Connection::SendQueryParams");
 
-  Connection *self = THIS();
+  Connection *self = NODE_THIS();
 
   Nan::Utf8String commandText(info[0]);
   TRACEF("Connection::SendQueryParams: %s\n", *commandText);
@@ -377,7 +377,7 @@ NAN_METHOD(Connection::SendQueryParams) {
 NAN_METHOD(Connection::SendPrepare) {
   TRACE("Connection::SendPrepare");
 
-  Connection *self = THIS();
+  Connection *self = NODE_THIS();
 
   Nan::Utf8String statementName(info[0]);
   Nan::Utf8String commandText(info[1]);
@@ -398,7 +398,7 @@ NAN_METHOD(Connection::SendPrepare) {
 NAN_METHOD(Connection::SendQueryPrepared) {
   TRACE("Connection::SendQueryPrepared");
 
-  Connection *self = THIS();
+  Connection *self = NODE_THIS();
 
   Nan::Utf8String statementName(info[0]);
   TRACEF("Connection::SendQueryPrepared: %s\n", *statementName);
@@ -426,7 +426,7 @@ NAN_METHOD(Connection::SendQueryPrepared) {
 NAN_METHOD(Connection::GetResult) {
   TRACE("Connection::GetResult");
 
-  Connection *self = THIS();
+  Connection *self = NODE_THIS();
   PGresult *result = PQgetResult(self->pq);
 
   if(result == NULL) {
@@ -440,7 +440,7 @@ NAN_METHOD(Connection::GetResult) {
 NAN_METHOD(Connection::ConsumeInput) {
   TRACE("Connection::ConsumeInput");
 
-  Connection *self = THIS();
+  Connection *self = NODE_THIS();
 
   int success = PQconsumeInput(self->pq);
   info.GetReturnValue().Set(success == 1);
@@ -449,7 +449,7 @@ NAN_METHOD(Connection::ConsumeInput) {
 NAN_METHOD(Connection::IsBusy) {
   TRACE("Connection::IsBusy");
 
-  Connection *self = THIS();
+  Connection *self = NODE_THIS();
 
   int isBusy = PQisBusy(self->pq);
   TRACEF("Connection::IsBusy: %d\n", isBusy);
@@ -460,7 +460,7 @@ NAN_METHOD(Connection::IsBusy) {
 NAN_METHOD(Connection::StartRead) {
   TRACE("Connection::StartRead");
 
-  Connection* self = THIS();
+  Connection* self = NODE_THIS();
 
   self->ReadStart();
 }
@@ -468,7 +468,7 @@ NAN_METHOD(Connection::StartRead) {
 NAN_METHOD(Connection::StopRead) {
   TRACE("Connection::StopRead");
 
-  Connection* self = THIS();
+  Connection* self = NODE_THIS();
 
   self->ReadStop();
 }
@@ -476,7 +476,7 @@ NAN_METHOD(Connection::StopRead) {
 NAN_METHOD(Connection::StartWrite) {
   TRACE("Connection::StartWrite");
 
-  Connection* self = THIS();
+  Connection* self = NODE_THIS();
 
   self->WriteStart();
 }
@@ -484,7 +484,7 @@ NAN_METHOD(Connection::StartWrite) {
 NAN_METHOD(Connection::SetNonBlocking) {
   TRACE("Connection::SetNonBlocking");
 
-  Connection* self = THIS();
+  Connection* self = NODE_THIS();
 
   int ok = PQsetnonblocking(self->pq, Nan::To<int>(info[0]).FromJust());
 
@@ -494,7 +494,7 @@ NAN_METHOD(Connection::SetNonBlocking) {
 NAN_METHOD(Connection::IsNonBlocking) {
   TRACE("Connection::IsNonBlocking");
 
-  Connection* self = THIS();
+  Connection* self = NODE_THIS();
 
   int status = PQisnonblocking(self->pq);
 
@@ -504,7 +504,7 @@ NAN_METHOD(Connection::IsNonBlocking) {
 NAN_METHOD(Connection::Flush) {
   TRACE("Connection::Flush");
 
-  Connection* self = THIS();
+  Connection* self = NODE_THIS();
 
   int status = PQflush(self->pq);
 
@@ -515,7 +515,7 @@ NAN_METHOD(Connection::Flush) {
 NAN_METHOD(Connection::EscapeLiteral) {
   TRACE("Connection::EscapeLiteral");
 
-  Connection* self = THIS();
+  Connection* self = NODE_THIS();
 
   Nan::Utf8String str(Nan::To<v8::String>(info[0]).ToLocalChecked());
 
@@ -534,7 +534,7 @@ NAN_METHOD(Connection::EscapeLiteral) {
 NAN_METHOD(Connection::EscapeIdentifier) {
   TRACE("Connection::EscapeIdentifier");
 
-  Connection* self = THIS();
+  Connection* self = NODE_THIS();
 
   Nan::Utf8String str(Nan::To<v8::String>(info[0]).ToLocalChecked());
 
@@ -554,7 +554,7 @@ NAN_METHOD(Connection::EscapeIdentifier) {
 NAN_METHOD(Connection::Notifies) {
   LOG("Connection::Notifies");
 
-  Connection* self = THIS();
+  Connection* self = NODE_THIS();
 
   PGnotify* msg = PQnotifies(self->pq);
 
@@ -576,7 +576,7 @@ NAN_METHOD(Connection::Notifies) {
 NAN_METHOD(Connection::PutCopyData) {
   LOG("Connection::PutCopyData");
 
-  Connection* self = THIS();
+  Connection* self = NODE_THIS();
 
   v8::Local<v8::Object> buffer = info[0].As<v8::Object>();
 
@@ -591,7 +591,7 @@ NAN_METHOD(Connection::PutCopyData) {
 NAN_METHOD(Connection::PutCopyEnd) {
   LOG("Connection::PutCopyEnd");
 
-  Connection* self = THIS();
+  Connection* self = NODE_THIS();
 
   //optional error message
 
@@ -615,7 +615,7 @@ static void FreeBuffer(char *buffer, void *) {
 NAN_METHOD(Connection::GetCopyData) {
   LOG("Connection::GetCopyData");
 
-  Connection* self = THIS();
+  Connection* self = NODE_THIS();
 
   char* buffer = NULL;
   int async = info[0]->IsTrue() ? 1 : 0;
@@ -635,7 +635,7 @@ NAN_METHOD(Connection::GetCopyData) {
 NAN_METHOD(Connection::Cancel) {
   LOG("Connection::Cancel");
 
-  Connection* self = THIS();
+  Connection* self = NODE_THIS();
 
   PGcancel *cancelStuct = PQgetCancel(self->pq);
 
