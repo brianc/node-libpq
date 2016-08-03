@@ -23,6 +23,6 @@
 #define TRACEF(format, arg) ;
 
 #define TRACE(msg) LOG(msg);
-#define THIS() Nan::ObjectWrap::Unwrap<Connection>(info.This());
+#define NODE_THIS() Nan::ObjectWrap::Unwrap<Connection>(info.This());
 
 #endif
