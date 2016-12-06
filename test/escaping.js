@@ -22,6 +22,27 @@ describe('escapeLiteral', function() {
     var result = pq.escapeLiteral("'; TRUNCATE TABLE blah;");
     assert.equal(result, "'''; TRUNCATE TABLE blah;'");
   });
+
+  it('escapes an empty string', function() {
+	 var pq = new Libpq();
+	 pq.connectSync();
+	 var result = pq.escapeLiteral("");
+	 assert.equal(result, "''");
+  });
+
+  it('escapes a null value', function() {
+	 var pq = new Libpq();
+	 pq.connectSync();
+	 var result = pq.escapeLiteral(null);
+	 assert.equal(result, "NULL");
+  });
+
+  it('fails to escape an undefined value', function() {
+	 var pq = new Libpq();
+	 pq.connectSync();
+	 var result = pq.escapeLiteral();
+	 assert.strictEqual(result, undefined);
+  });
 });
 
 describe('escapeIdentifier', function() {
