@@ -9,8 +9,12 @@
       #Default to assuming pg_config is on the PATH.
       'variables': {
         'pgconfig': 'pg_config'
+      },
+      'xcode_settings': {
+          'CLANG_CXX_LIBRARY': 'libc++',
+          'MACOSX_DEPLOYMENT_TARGET': '10.8'
+       }
       }
-     }
     ]
   ],
   'targets': [
