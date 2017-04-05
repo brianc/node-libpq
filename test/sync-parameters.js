@@ -23,4 +23,11 @@ describe('sync query with parameters', function() {
     this.pq.execParams(queryText, ['Barkley', 4]);
     assert.equal(this.pq.resultErrorMessage(), '');
   });
+
+  it('works with buffer parameter', function() {
+    var queryText = 'SELECT $1::bytea as bin';
+    this.pq.execParams(queryText, [Buffer.from([0x00, 0x2a, 0x80, 0xff])]);
+    assert.strictEqual(this.pq.ntuples(), 1);
+    assert.strictEqual(this.pq.getvalue(0, 0), '\\x002a80ff');
+  });
 });
