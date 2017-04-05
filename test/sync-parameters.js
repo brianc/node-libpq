@@ -27,7 +27,7 @@ describe('sync query with parameters', function() {
   it('works with buffer parameter', function() {
     var queryText = 'SELECT $1::bytea as bin';
     var octets = [0x00, 0x2a, 0x80, 0xff];
-    var buffer = Buffer.from ? Buffer.from(octets) : new Buffer(octets);
+    var buffer = (Number(process.version.match(/^v(\d+)/)[1]) <= 4) ? new Buffer(octets) : Buffer.from(octets);
     this.pq.execParams(queryText, [buffer]);
     assert.strictEqual(this.pq.ntuples(), 1);
     assert.strictEqual(this.pq.getvalue(0, 0), '\\x002a80ff');
