@@ -38,7 +38,7 @@ describe('prepare and execPrepared with binary parameter', function() {
     assert.equal(this.pq.resultStatus(), 'PGRES_COMMAND_OK');
 
     var string = 'fo\\o';
-    var buffer = Buffer.from(string, 'utf8');
+    var buffer = helper.createBuffer(string, 'utf8');
     this.pq.execPrepared(statementName, [buffer]);
     assert.ifError(this.pq.resultErrorMessage());
     assert.strictEqual(this.pq.ntuples(), 1)

@@ -25,5 +25,12 @@ module.exports = {
       str += String.fromCharCode(parseInt(hex.substr(i, 2), 16));
     }
     return str;
+  },
+  createBuffer: function(string, encoding) {
+    if (Number(process.version.match(/^v(\d+)/)[1]) <= 4) {
+      return new Buffer(string, encoding);
+    } else {
+      return Buffer.from(string, encoding);
+    }
   }
 };

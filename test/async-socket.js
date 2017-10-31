@@ -57,7 +57,7 @@ describe('async simple query', function() {
   it('dispatches query with binary parameter', function(done) {
     var pq = this.pq;
     var string = 'fo\\o';
-    var buffer = Buffer.from(string, 'utf8');
+    var buffer = helper.createBuffer(string, 'utf8');
     var success = pq.sendQueryParams('SELECT $1::bytea as value', [buffer]);
     assert(success, pq.errorMessage());
     assert.strictEqual(pq.flush(), 0, 'Should have flushed query text & parameters');
@@ -115,7 +115,7 @@ describe('async simple query', function() {
     var pq = this.pq;
     var statementName = 'async-get-binary-param';
     var string = 'fo\\o';
-    var buffer = Buffer.from(string, 'utf8');
+    var buffer = helper.createBuffer(string, 'utf8');
     var success = pq.sendPrepare(statementName, 'SELECT $1::bytea as value', 1);
     assert(success, pq.errorMessage());
     assert.strictEqual(pq.flush(), 0, 'Should have flushed query text');
