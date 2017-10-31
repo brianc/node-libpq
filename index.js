@@ -91,7 +91,13 @@ PQ.prototype.execParams = function(commandText, parameters) {
   if(!parameters) {
     parameters = [];
   }
-  this.$execParams(commandText, parameters);
+  var paramFormats = parameters.map(function(value) {
+    return value instanceof Buffer ? 1 : 0;
+  });
+  var paramLengths = parameters.map(function(value) {
+    return value instanceof Buffer ? value.length : 0;
+  });
+  this.$execParams(commandText, parameters, paramFormats, paramLengths);
 };
 
 //SYNC prepares a named query and stores the result
@@ -123,7 +129,13 @@ PQ.prototype.execPrepared = function(statementName, parameters) {
   if(!parameters) {
     parameters = [];
   }
-  this.$execPrepared(statementName, parameters);
+  var paramFormats = parameters.map(function(value) {
+    return value instanceof Buffer ? 1 : 0;
+  });
+  var paramLengths = parameters.map(function(value) {
+    return value instanceof Buffer ? value.length : 0;
+  });
+  this.$execPrepared(statementName, parameters, paramFormats, paramLengths);
 };
 
 //send a command to begin executing a query in async mode
@@ -144,7 +156,13 @@ PQ.prototype.sendQueryParams = function(commandText, parameters) {
   if(!parameters) {
     parameters = [];
   }
-  return this.$sendQueryParams(commandText, parameters);
+  var paramFormats = parameters.map(function(value) {
+    return value instanceof Buffer ? 1 : 0;
+  });
+  var paramLengths = parameters.map(function(value) {
+    return value instanceof Buffer ? value.length : 0;
+  });
+  return this.$sendQueryParams(commandText, parameters, paramFormats, paramLengths);
 };
 
 //send a command to prepare a named query in async mode
@@ -170,7 +188,13 @@ PQ.prototype.sendQueryPrepared = function(statementName, parameters) {
   if(!parameters) {
     parameters = [];
   }
-  return this.$sendQueryPrepared(statementName, parameters);
+  var paramFormats = parameters.map(function(value) {
+    return value instanceof Buffer ? 1 : 0;
+  });
+  var paramLengths = parameters.map(function(value) {
+    return value instanceof Buffer ? value.length : 0;
+  });
+  return this.$sendQueryPrepared(statementName, parameters, paramFormats, paramLengths);
 };
 
 //'pops' a result out of the buffered

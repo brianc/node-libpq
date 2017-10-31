@@ -76,6 +76,7 @@ class Connection : public Nan::ObjectWrap {
     static char* NewCString(v8::Local<v8::Value> val);
     static char** NewCStringArray(v8::Local<v8::Array> jsParams);
     static void DeleteCStringArray(char** array, int length);
+    static int* NewCIntArray(v8::Local<v8::Array> jsParams);
     void Emit(const char* message);
 };
 
