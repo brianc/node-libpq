@@ -25,3 +25,25 @@ describe('prepare and execPrepared', function() {
     });
   });
 });
+
+describe('prepare and execPrepared with binary parameter', function() {
+
+  helper.setupIntegration();
+
+  var statementName = 'get-binary-param';
+
+  it('works properly', function() {
+    this.pq.prepare(statementName, 'SELECT $1::bytea as value', 1);
+    assert.ifError(this.pq.resultErrorMessage());
+    assert.equal(this.pq.resultStatus(), 'PGRES_COMMAND_OK');
+
+    var string = 'fo\\o';
+    var buffer = Buffer.from(string, 'utf8');
+    this.pq.execPrepared(statementName, [buffer]);
+    assert.ifError(this.pq.resultErrorMessage());
+    assert.strictEqual(this.pq.ntuples(), 1)
+    assert.strictEqual(this.pq.nfields(), 1);
+    var value = helper.parseHexOutput(this.pq.getvalue(0, 0));
+    assert.strictEqual(value, string);
+  });
+});

@@ -23,4 +23,24 @@ describe('sync query with parameters', function() {
     this.pq.execParams(queryText, ['Barkley', 4]);
     assert.equal(this.pq.resultErrorMessage(), '');
   });
+
+  it('works with non-escaped binary parameter', function() {
+    var queryText = 'SELECT $1::bytea as value';
+    var string = 'foo';
+    var buffer = Buffer.from(string, 'utf8');
+    this.pq.execParams(queryText, [buffer]);
+    assert.strictEqual(this.pq.ntuples(), 1);
+    var value = helper.parseHexOutput(this.pq.getvalue(0, 0));
+    assert.strictEqual(value, string);
+  });
+
+  it('works with escaped binary parameter', function() {
+    var queryText = 'SELECT $1::bytea as value';
+    var string = 'fo\\o';
+    var buffer = Buffer.from(string, 'utf8');
+    this.pq.execParams(queryText, [buffer]);
+    assert.strictEqual(this.pq.ntuples(), 1);
+    var value = helper.parseHexOutput(this.pq.getvalue(0, 0));
+    assert.strictEqual(value, string);
+  });
 });
