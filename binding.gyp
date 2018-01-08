@@ -30,7 +30,7 @@
           'msvs_settings': {
             'VCLinkerTool' : {
               'AdditionalLibraryDirectories' : [
-                '<!@(<(pgconfig) --bindir)\\'
+                '<!@(<(pgconfig) --libdir)\\'
               ]
             },
           }
