@@ -26,7 +26,7 @@
       ],
       'conditions' : [
         ['OS=="win"', {
-          'libraries' : ['libpq.lib'],
+          'libraries' : ['ws2_32.lib','secur32.lib','crypt32.lib','wsock32.lib','msvcrt.lib','libpq.lib'],
           'msvs_settings': {
             'VCLinkerTool' : {
               'AdditionalLibraryDirectories' : [
