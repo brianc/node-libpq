@@ -210,6 +210,28 @@ NAN_METHOD(Connection::Fname) {
   info.GetReturnValue().Set(Nan::New<v8::String>(colName).ToLocalChecked());
 }
 
+NAN_METHOD(Connection::Ftable) {
+  TRACE("Connection::Ftable");
+  Connection *self = NODE_THIS();
+
+  PGresult* res = self->lastResult;
+
+  int table = PQftable(res, info[0]->Int32Value());
+
+  info.GetReturnValue().Set(table);
+}
+
+NAN_METHOD(Connection::Ftablecol) {
+  TRACE("Connection::Ftablecol");
+  Connection *self = NODE_THIS();
+
+  PGresult* res = self->lastResult;
+
+  int tablecol = PQftablecol(res, info[0]->Int32Value());
+
+  info.GetReturnValue().Set(tablecol);
+}
+
 NAN_METHOD(Connection::Ftype) {
   TRACE("Connection::Ftype");
   Connection *self = NODE_THIS();

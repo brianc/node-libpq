@@ -221,6 +221,16 @@ PQ.prototype.fname = function(offset) {
   return this.$fname(offset);
 };
 
+//returns the Oid of the table of the field at the given offset
+PQ.prototype.ftable = function(offset) {
+  return this.$ftable(offset);
+};
+
+//returns the column number (within its table) of the field at the given offset
+PQ.prototype.ftablecol = function(offset) {
+  return this.$ftablecol(offset);
+};
+
 //returns the Oid of the type for the given field
 PQ.prototype.ftype = function(offset) {
   return this.$ftype(offset);

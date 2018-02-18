@@ -44,6 +44,8 @@ NAN_MODULE_INIT(InitAddon) {
   Nan::SetPrototypeMethod(tpl, "$ntuples", Connection::Ntuples);
   Nan::SetPrototypeMethod(tpl, "$nfields", Connection::Nfields);
   Nan::SetPrototypeMethod(tpl, "$fname", Connection::Fname);
+  Nan::SetPrototypeMethod(tpl, "$ftable", Connection::Ftable);
+  Nan::SetPrototypeMethod(tpl, "$ftablecol", Connection::Ftablecol);
   Nan::SetPrototypeMethod(tpl, "$ftype", Connection::Ftype);
   Nan::SetPrototypeMethod(tpl, "$getvalue", Connection::Getvalue);
   Nan::SetPrototypeMethod(tpl, "$getisnull", Connection::Getisnull);
