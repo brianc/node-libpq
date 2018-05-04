@@ -29,7 +29,7 @@ describe('async simple query', function() {
       assert.strictEqual(pq.flush(), 0, 'Should have flushed all data to socket');
       assert(success, pq.errorMessage());
       consume(pq, function() {
-        assert.ifError(pq.errorMessage());
+        assert(!pq.errorMessage());
         assert(pq.getResult());
         assert.strictEqual(pq.getResult(), false);
         assert.strictEqual(pq.ntuples(), 1);
@@ -45,7 +45,7 @@ describe('async simple query', function() {
     assert(success, pq.errorMessage());
     assert.strictEqual(pq.flush(), 0, 'Should have flushed query text & parameters');
     consume(pq, function() {
-      assert.ifError(pq.errorMessage());
+      assert(!pq.errorMessage());
       assert(pq.getResult());
       assert.strictEqual(pq.getResult(), false);
       assert.strictEqual(pq.ntuples(), 1);
@@ -61,7 +61,7 @@ describe('async simple query', function() {
     assert(success, pq.errorMessage());
     assert.strictEqual(pq.flush(), 0, 'Should have flushed query text');
     consume(pq, function() {
-      assert.ifError(pq.errorMessage());
+      assert(!pq.errorMessage());
 
       //first time there should be a result
       assert(pq.getResult());
@@ -79,7 +79,7 @@ describe('async simple query', function() {
       assert(success, pq.errorMessage());
       assert.strictEqual(pq.flush(), 0, 'Should have flushed parameters');
       consume(pq, function() {
-        assert.ifError(pq.errorMessage());
+        assert(!pq.errorMessage());
 
         //consume the result of the query execution
         assert(pq.getResult());
