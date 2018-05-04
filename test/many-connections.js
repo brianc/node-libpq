@@ -29,7 +29,7 @@ describe('connect async', function() {
     var connect = function(cb) {
       pqs.forEach(function(pq) {
         pq.connect(function(err) {
-          assert.ifError(err);
+          assert(!err);
           count++;
           pq.startReader();
           if(count == total) {
