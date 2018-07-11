@@ -104,7 +104,12 @@ NAN_METHOD(Connection::ExecParams) {
   v8::Local<v8::Array> jsParams = v8::Local<v8::Array>::Cast(info[1]);
 
   int numberOfParams = jsParams->Length();
-  char **parameters = NewCStringArray(jsParams);
+
+  char** parameters = new char*[numberOfParams];
+  int* lengths = new int[numberOfParams];
+  int* formats = new int[numberOfParams];
+
+  ConvertParameters(jsParams, parameters, lengths, formats);
 
   PGresult* result = PQexecParams(
       self->pq,
@@ -112,12 +117,14 @@ NAN_METHOD(Connection::ExecParams) {
       numberOfParams,
       NULL, //const Oid* paramTypes[],
       parameters, //const char* const* paramValues[]
-      NULL, //const int* paramLengths[]
-      NULL, //const int* paramFormats[],
+      lengths, //const int* paramLengths[]
+      formats, //const int* paramFormats[],
       0 //result format of text
       );
 
   DeleteCStringArray(parameters, numberOfParams);
+  delete[] lengths;
+  delete[] formats;
 
   self->SetLastResult(result);
 }
@@ -152,19 +159,26 @@ NAN_METHOD(Connection::ExecPrepared) {
   v8::Local<v8::Array> jsParams = v8::Local<v8::Array>::Cast(info[1]);
 
   int numberOfParams = jsParams->Length();
-  char** parameters = NewCStringArray(jsParams);
+
+  char** parameters = new char*[numberOfParams];
+  int* lengths = new int[numberOfParams];
+  int* formats = new int[numberOfParams];
+
+  ConvertParameters(jsParams, parameters, lengths, formats);
 
   PGresult* result = PQexecPrepared(
       self->pq,
       *statementName,
       numberOfParams,
       parameters, //const char* const* paramValues[]
-      NULL, //const int* paramLengths[]
-      NULL, //const int* paramFormats[],
+      lengths, //const int* paramLengths[]
+      formats, //const int* paramFormats[],
       0 //result format of text
       );
 
   DeleteCStringArray(parameters, numberOfParams);
+  delete[] lengths;
+  delete[] formats;
 
   self->SetLastResult(result);
 }
@@ -356,7 +370,12 @@ NAN_METHOD(Connection::SendQueryParams) {
   v8::Local<v8::Array> jsParams = v8::Local<v8::Array>::Cast(info[1]);
 
   int numberOfParams = jsParams->Length();
-  char** parameters = NewCStringArray(jsParams);
+
+  char** parameters = new char*[numberOfParams];
+  int* lengths = new int[numberOfParams];
+  int* formats = new int[numberOfParams];
+
+  ConvertParameters(jsParams, parameters, lengths, formats);
 
   int success = PQsendQueryParams(
       self->pq,
@@ -364,12 +383,14 @@ NAN_METHOD(Connection::SendQueryParams) {
       numberOfParams,
       NULL, //const Oid* paramTypes[],
       parameters, //const char* const* paramValues[]
-      NULL, //const int* paramLengths[]
-      NULL, //const int* paramFormats[],
+      lengths, //const int* paramLengths[]
+      formats, //const int* paramFormats[],
       0 //result format of text
       );
 
   DeleteCStringArray(parameters, numberOfParams);
+  delete[] lengths;
+  delete[] formats;
 
   info.GetReturnValue().Set(success == 1);
 }
@@ -406,19 +427,25 @@ NAN_METHOD(Connection::SendQueryPrepared) {
   v8::Local<v8::Array> jsParams = v8::Local<v8::Array>::Cast(info[1]);
 
   int numberOfParams = jsParams->Length();
-  char** parameters = NewCStringArray(jsParams);
+  char** parameters = new char*[numberOfParams];
+  int* lengths = new int[numberOfParams];
+  int* formats = new int[numberOfParams];
+
+  ConvertParameters(jsParams, parameters, lengths, formats);
 
   int success = PQsendQueryPrepared(
       self->pq,
       *statementName,
       numberOfParams,
       parameters, //const char* const* paramValues[]
-      NULL, //const int* paramLengths[]
-      NULL, //const int* paramFormats[],
+      lengths, //const int* paramLengths[]
+      formats, //const int* paramFormats[],
       0 //result format of text
       );
 
   DeleteCStringArray(parameters, numberOfParams);
+  delete[] lengths;
+  delete[] formats;
 
   info.GetReturnValue().Set(success == 1);
 }
@@ -747,22 +774,17 @@ void Connection::SetLastResult(PGresult* result) {
   lastResult = result;
 }
 
-char* Connection::NewCString(v8::Local<v8::Value> val) {
-  Nan::HandleScope scope;
-
-  v8::Local<v8::String> str = Nan::To<v8::String>(val).ToLocalChecked();
-  int len = str->Utf8Length() + 1;
-  char* buffer = new char[len];
-  str->WriteUtf8(buffer, len);
-  return buffer;
+void Connection::DeleteCStringArray(char** array, int length) {
+  for(int i = 0; i < length; i++) {
+    delete [] array[i];
+  }
+  delete [] array;
 }
 
-char** Connection::NewCStringArray(v8::Local<v8::Array> jsParams) {
+void Connection::ConvertParameters(v8::Local<v8::Array> jsParams, char** parameters, int* lengths, int* formats) {
   Nan::HandleScope scope;
 
   int numberOfParams = jsParams->Length();
-
-  char** parameters = new char*[numberOfParams];
 
   for(int i = 0; i < numberOfParams; i++) {
     v8::Local<v8::Value> val = Nan::Get(jsParams, i).ToLocalChecked();
@@ -770,20 +792,28 @@ char** Connection::NewCStringArray(v8::Local<v8::Array> jsParams) {
       parameters[i] = NULL;
       continue;
     }
-    //expect every other value to be a string...
-    //make sure aggresive type checking is done
-    //on the JavaScript side before calling
-    parameters[i] = NewCString(val);
-  }
 
-  return parameters;
-}
-
-void Connection::DeleteCStringArray(char** array, int length) {
-  for(int i = 0; i < length; i++) {
-    delete [] array[i];
+    v8::Local<v8::Object> bufferObj = val->ToObject();
+    if (node::Buffer::HasInstance(val)) {
+      int len = node::Buffer::Length(bufferObj);
+      lengths[i] = len;
+      char* buffer = new char[len];
+      memcpy(buffer, node::Buffer::Data(bufferObj), len);
+      parameters[i] = buffer;
+      formats[i] = 1;
+    } else {
+      //expect every other value to be a string...
+      //make sure aggresive type checking is done
+      //on the JavaScript side before calling
+      v8::Local<v8::String> str = Nan::To<v8::String>(val).ToLocalChecked();
+      int len = str->Utf8Length() + 1;
+      lengths[i] = str->Utf8Length();
+      char* buffer = new char[len];
+      str->WriteUtf8(buffer, len);
+      parameters[i] = buffer;
+      formats[i] = 0;
+    }
   }
-  delete [] array;
 }
 
 void Connection::Emit(const char* message) {
