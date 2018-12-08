@@ -35,7 +35,8 @@
             },
           }
         }, { # OS!="win"
-          'libraries' : ['-lpq -L<!@(<(pgconfig) --libdir)']
+          'libraries' : ['-lpq -L<!@(<(pgconfig) --libdir)'],
+          'ldflags' : ['<!@(<(pgconfig) --ldflags)']
         }],
         ['OS=="mac"', {
           'xcode_settings': {
