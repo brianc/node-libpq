@@ -753,7 +753,7 @@ char* Connection::NewCString(v8::Local<v8::Value> val) {
   v8::Local<v8::String> str = Nan::To<v8::String>(val).ToLocalChecked();
 
   #if defined(V8_MAJOR_VERSION) && V8_MAJOR_VERSION >= 7
-    int len = str->Utf8String(.Length(v8::Isolate::GetCurrent())) + 1;
+    int len = str->Utf8Length(.Length(v8::Isolate::GetCurrent())) + 1;
   #else
     int len = str->Utf8Length() + 1;
   #endif
