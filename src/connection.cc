@@ -751,7 +751,7 @@ char* Connection::NewCString(v8::Local<v8::Value> val) {
   Nan::HandleScope scope;
 
   Nan::Utf8String str(val);
-  char* buffer = (char*)malloc(str.length() + 1);
+  char* buffer = new char[str.length() + 1];
   strcpy(buffer, *str);
 
   return buffer;
