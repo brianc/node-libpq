@@ -750,15 +750,9 @@ void Connection::SetLastResult(PGresult* result) {
 char* Connection::NewCString(v8::Local<v8::Value> val) {
   Nan::HandleScope scope;
 
-  v8::Local<v8::String> str = Nan::To<v8::String>(val).ToLocalChecked();
-  int len = Nan::Utf8String(str).length() + 1;
-  char* buffer = new char[len];
-
-  #if defined(V8_MAJOR_VERSION) && V8_MAJOR_VERSION >= 7
-    str->WriteUtf8(v8::Isolate::GetCurrent(), buffer, len);
-  #else
-    str->WriteUtf8(buffer, len);
-  #endif
+  Nan::Utf8String str(val);
+  char* buffer = (char*)malloc(str.length() + 1);
+  strcpy(buffer, *str);
 
   return buffer;
 }
