@@ -201,11 +201,7 @@ NAN_METHOD(Connection::Fname) {
 
   PGresult* res = self->lastResult;
 
-  #if defined(V8_MAJOR_VERSION) && V8_MAJOR_VERSION >= 7
-    char* colName = PQfname(res, info[0]->Int32Value(Nan::GetCurrentContext()).ToChecked());
-  #else
-    char* colName = PQfname(res, info[0]->Int32Value());
-  #endif
+  char* colName = PQfname(res, info[0]->ToInt32(Nan::GetCurrentContext()).ToLocalChecked()->Value());
 
   if(colName == NULL) {
     return info.GetReturnValue().SetNull();
@@ -220,11 +216,7 @@ NAN_METHOD(Connection::Ftype) {
 
   PGresult* res = self->lastResult;
 
-  #if defined(V8_MAJOR_VERSION) && V8_MAJOR_VERSION >= 7
-    int colName = PQftype(res, info[0]->Int32Value(Nan::GetCurrentContext()).ToChecked());
-  #else
-    int colName = PQftype(res, info[0]->Int32Value());
-  #endif
+  int colName = PQftype(res, info[0]->ToInt32(Nan::GetCurrentContext()).ToLocalChecked()->Value());
 
   info.GetReturnValue().Set(colName);
 }
@@ -235,13 +227,8 @@ NAN_METHOD(Connection::Getvalue) {
 
   PGresult* res = self->lastResult;
 
-  #if defined(V8_MAJOR_VERSION) && V8_MAJOR_VERSION >= 7
-    int rowNumber = info[0]->Int32Value(Nan::GetCurrentContext()).ToChecked();
-    int colNumber = info[1]->Int32Value(Nan::GetCurrentContext()).ToChecked();
-  #else
-    int rowNumber = info[0]->Int32Value();
-    int colNumber = info[1]->Int32Value();
-  #endif
+  int rowNumber = info[0]->ToInt32(Nan::GetCurrentContext()).ToLocalChecked()->Value();
+  int colNumber = info[1]->ToInt32(Nan::GetCurrentContext()).ToLocalChecked()->Value();
 
   char* rowValue = PQgetvalue(res, rowNumber, colNumber);
 
@@ -258,13 +245,8 @@ NAN_METHOD(Connection::Getisnull) {
 
   PGresult* res = self->lastResult;
 
-  #if defined(V8_MAJOR_VERSION) && V8_MAJOR_VERSION >= 7
-    int rowNumber = info[0]->Int32Value(Nan::GetCurrentContext()).ToChecked();
-    int colNumber = info[1]->Int32Value(Nan::GetCurrentContext()).ToChecked();
-  #else
-    int rowNumber = info[0]->Int32Value();
-    int colNumber = info[1]->Int32Value();
-  #endif
+  int rowNumber = info[0]->ToInt32(Nan::GetCurrentContext()).ToLocalChecked()->Value();
+  int colNumber = info[1]->ToInt32(Nan::GetCurrentContext()).ToLocalChecked()->Value();
 
   int rowValue = PQgetisnull(res, rowNumber, colNumber);
 
@@ -771,7 +753,7 @@ char* Connection::NewCString(v8::Local<v8::Value> val) {
   v8::Local<v8::String> str = Nan::To<v8::String>(val).ToLocalChecked();
 
   #if defined(V8_MAJOR_VERSION) && V8_MAJOR_VERSION >= 7
-    int len = str->Utf8Length(v8::Isolate::GetCurrent()) + 1;
+    int len = str->Utf8String(.Length(v8::Isolate::GetCurrent())) + 1;
   #else
     int len = str->Utf8Length() + 1;
   #endif
