@@ -751,13 +751,7 @@ char* Connection::NewCString(v8::Local<v8::Value> val) {
   Nan::HandleScope scope;
 
   v8::Local<v8::String> str = Nan::To<v8::String>(val).ToLocalChecked();
-
-  #if defined(V8_MAJOR_VERSION) && V8_MAJOR_VERSION >= 7
-    int len = str->Utf8Length(v8::Isolate::GetCurrent()) + 1;
-  #else
-    int len = str->Utf8Length() + 1;
-  #endif
-
+  int len = Nan::Utf8String(str).length() + 1;
   char* buffer = new char[len];
 
   #if defined(V8_MAJOR_VERSION) && V8_MAJOR_VERSION >= 7
