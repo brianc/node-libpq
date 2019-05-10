@@ -201,7 +201,7 @@ NAN_METHOD(Connection::Fname) {
 
   PGresult* res = self->lastResult;
 
-  char* colName = PQfname(res, info[0]->ToInt32(Nan::GetCurrentContext()).ToLocalChecked()->Value());
+  char* colName = PQfname(res, Nan::To<int32_t>(info[0]).FromJust());
 
   if(colName == NULL) {
     return info.GetReturnValue().SetNull();
@@ -216,7 +216,7 @@ NAN_METHOD(Connection::Ftype) {
 
   PGresult* res = self->lastResult;
 
-  int colName = PQftype(res, info[0]->ToInt32(Nan::GetCurrentContext()).ToLocalChecked()->Value());
+  int colName = PQftype(res, Nan::To<int32_t>(info[0]).FromJust());
 
   info.GetReturnValue().Set(colName);
 }
@@ -227,8 +227,8 @@ NAN_METHOD(Connection::Getvalue) {
 
   PGresult* res = self->lastResult;
 
-  int rowNumber = info[0]->ToInt32(Nan::GetCurrentContext()).ToLocalChecked()->Value();
-  int colNumber = info[1]->ToInt32(Nan::GetCurrentContext()).ToLocalChecked()->Value();
+  int rowNumber = Nan::To<int32_t>(info[0]).FromJust();
+  int colNumber = Nan::To<int32_t>(info[1]).FromJust();
 
   char* rowValue = PQgetvalue(res, rowNumber, colNumber);
 
@@ -245,8 +245,8 @@ NAN_METHOD(Connection::Getisnull) {
 
   PGresult* res = self->lastResult;
 
-  int rowNumber = info[0]->ToInt32(Nan::GetCurrentContext()).ToLocalChecked()->Value();
-  int colNumber = info[1]->ToInt32(Nan::GetCurrentContext()).ToLocalChecked()->Value();
+  int rowNumber = Nan::To<int32_t>(info[0]).FromJust();
+  int colNumber = Nan::To<int32_t>(info[1]).FromJust();
 
   int rowValue = PQgetisnull(res, rowNumber, colNumber);
 
