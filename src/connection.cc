@@ -201,7 +201,11 @@ NAN_METHOD(Connection::Fname) {
 
   PGresult* res = self->lastResult;
 
-  char* colName = PQfname(res, info[0]->Int32Value());
+  #if defined(V8_MAJOR_VERSION) && V8_MAJOR_VERSION >= 7
+    char* colName = PQfname(res, info[0]->Int32Value(Nan::GetCurrentContext()).ToChecked());
+  #else
+    char* colName = PQfname(res, info[0]->Int32Value());
+  #endif
 
   if(colName == NULL) {
     return info.GetReturnValue().SetNull();
@@ -216,7 +220,11 @@ NAN_METHOD(Connection::Ftype) {
 
   PGresult* res = self->lastResult;
 
-  int colName = PQftype(res, info[0]->Int32Value());
+  #if defined(V8_MAJOR_VERSION) && V8_MAJOR_VERSION >= 7
+    int colName = PQftype(res, info[0]->Int32Value(Nan::GetCurrentContext()).ToChecked());
+  #else
+    int colName = PQftype(res, info[0]->Int32Value());
+  #endif
 
   info.GetReturnValue().Set(colName);
 }
@@ -227,8 +235,13 @@ NAN_METHOD(Connection::Getvalue) {
 
   PGresult* res = self->lastResult;
 
-  int rowNumber = info[0]->Int32Value();
-  int colNumber = info[1]->Int32Value();
+  #if defined(V8_MAJOR_VERSION) && V8_MAJOR_VERSION >= 7
+    int rowNumber = info[0]->Int32Value(Nan::GetCurrentContext()).ToChecked();
+    int colNumber = info[1]->Int32Value(Nan::GetCurrentContext()).ToChecked();
+  #else
+    int rowNumber = info[0]->Int32Value();
+    int colNumber = info[1]->Int32Value();
+  #endif
 
   char* rowValue = PQgetvalue(res, rowNumber, colNumber);
 
@@ -245,8 +258,13 @@ NAN_METHOD(Connection::Getisnull) {
 
   PGresult* res = self->lastResult;
 
-  int rowNumber = info[0]->Int32Value();
-  int colNumber = info[1]->Int32Value();
+  #if defined(V8_MAJOR_VERSION) && V8_MAJOR_VERSION >= 7
+    int rowNumber = info[0]->Int32Value(Nan::GetCurrentContext()).ToChecked();
+    int colNumber = info[1]->Int32Value(Nan::GetCurrentContext()).ToChecked();
+  #else
+    int rowNumber = info[0]->Int32Value();
+    int colNumber = info[1]->Int32Value();
+  #endif
 
   int rowValue = PQgetisnull(res, rowNumber, colNumber);
 
@@ -751,9 +769,21 @@ char* Connection::NewCString(v8::Local<v8::Value> val) {
   Nan::HandleScope scope;
 
   v8::Local<v8::String> str = Nan::To<v8::String>(val).ToLocalChecked();
-  int len = str->Utf8Length() + 1;
+
+  #if defined(V8_MAJOR_VERSION) && V8_MAJOR_VERSION >= 7
+    int len = str->Utf8Length(v8::Isolate::GetCurrent()) + 1;
+  #else
+    int len = str->Utf8Length() + 1;
+  #endif
+
   char* buffer = new char[len];
-  str->WriteUtf8(buffer, len);
+
+  #if defined(V8_MAJOR_VERSION) && V8_MAJOR_VERSION >= 7
+    str->WriteUtf8(v8::Isolate::GetCurrent(), buffer, len);
+  #else
+    str->WriteUtf8(buffer, len);
+  #endif
+
   return buffer;
 }
 
