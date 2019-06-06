@@ -801,8 +801,7 @@ void Connection::Emit(const char* message) {
 
   TRACE("CALLING EMIT");
   Nan::TryCatch tc;
-  Nan::AsyncResource *async_emit_f = new Nan::AsyncResource("libpq:connection:emit");
-  async_emit_f->runInAsyncScope(handle(), emit_f, 1, info);
+  Nan::MakeCallback(handle(), emit_f, 1, info);
   if(tc.HasCaught()) {
     Nan::FatalException(tc);
   }
