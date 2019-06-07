@@ -11,8 +11,12 @@ before_install:
   - echo $TRAVIS_NODE_VERSION
   - if [ $TRAVIS_OS_NAME == "linux" ]; then
       if [[ $(node -v) =~ v[1-9][0-9] ]]; then
+        export PGUSER="postgres";
+        export PGDATABASE="postgres";
         export PGSSLMODE="allow";
       else
+        export PGUSER="postgres";
+        export PGDATABASE="postgres";
         export PGSSLMODE="prefer";
       fi
     fi
@@ -21,4 +25,4 @@ before_install:
   - npm --version
 
 env:
-  - CC=clang CXX=clang++ npm_config_clang=1 PGUSER=postgres PGDATABASE=postgres
+  - CC=clang CXX=clang++ npm_config_clang=1
