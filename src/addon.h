@@ -16,11 +16,11 @@
 #include "connection.h"
 #include "connect-async-worker.h"
 
-//#define LOG(msg) fprintf(stderr, "%s\n", msg);
-//#define TRACEF(format, arg) fprintf(stderr, format, arg);
+#define LOG(msg) fprintf(stderr, "%s\n", msg);
+#define TRACEF(format, arg) fprintf(stderr, format, arg);
 
-#define LOG(msg) ;
-#define TRACEF(format, arg) ;
+//#define LOG(msg);
+//#define TRACEF(format, arg);
 
 #define TRACE(msg) LOG(msg);
 #define NODE_THIS() Nan::ObjectWrap::Unwrap<Connection>(info.This());
