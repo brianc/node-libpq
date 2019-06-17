@@ -25,6 +25,9 @@
         '<!(node -e "require(\'nan\')")'
       ],
       'conditions' : [
+        ['OS=="linux"', {
+            'cflags': ['-fvisibility=hidden']
+        }],
         ['OS=="win"', {
           'libraries' : ['libpq.lib'],
           'msvs_settings': {
@@ -35,7 +38,8 @@
             },
           }
         }, { # OS!="win"
-          'libraries' : ['-lpq -L<!@(<(pgconfig) --libdir)']
+          'libraries' : ['-lpq -L<!@(<(pgconfig) --libdir)'],
+          'ldflags' : ['<!@(<(pgconfig) --ldflags)']
         }],
         ['OS=="mac"', {
           'xcode_settings': {
