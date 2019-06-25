@@ -201,7 +201,7 @@ NAN_METHOD(Connection::Fname) {
 
   PGresult* res = self->lastResult;
 
-  char* colName = PQfname(res, info[0]->Int32Value());
+  char* colName = PQfname(res, Nan::To<int32_t>(info[0]).FromJust());
 
   if(colName == NULL) {
     return info.GetReturnValue().SetNull();
@@ -216,7 +216,7 @@ NAN_METHOD(Connection::Ftype) {
 
   PGresult* res = self->lastResult;
 
-  int colName = PQftype(res, info[0]->Int32Value());
+  int colName = PQftype(res, Nan::To<int32_t>(info[0]).FromJust());
 
   info.GetReturnValue().Set(colName);
 }
@@ -227,8 +227,8 @@ NAN_METHOD(Connection::Getvalue) {
 
   PGresult* res = self->lastResult;
 
-  int rowNumber = info[0]->Int32Value();
-  int colNumber = info[1]->Int32Value();
+  int rowNumber = Nan::To<int32_t>(info[0]).FromJust();
+  int colNumber = Nan::To<int32_t>(info[1]).FromJust();
 
   char* rowValue = PQgetvalue(res, rowNumber, colNumber);
 
@@ -245,8 +245,8 @@ NAN_METHOD(Connection::Getisnull) {
 
   PGresult* res = self->lastResult;
 
-  int rowNumber = info[0]->Int32Value();
-  int colNumber = info[1]->Int32Value();
+  int rowNumber = Nan::To<int32_t>(info[0]).FromJust();
+  int colNumber = Nan::To<int32_t>(info[1]).FromJust();
 
   int rowValue = PQgetisnull(res, rowNumber, colNumber);
 
@@ -750,10 +750,10 @@ void Connection::SetLastResult(PGresult* result) {
 char* Connection::NewCString(v8::Local<v8::Value> val) {
   Nan::HandleScope scope;
 
-  v8::Local<v8::String> str = Nan::To<v8::String>(val).ToLocalChecked();
-  int len = str->Utf8Length() + 1;
-  char* buffer = new char[len];
-  str->WriteUtf8(buffer, len);
+  Nan::Utf8String str(val);
+  char* buffer = new char[str.length() + 1];
+  strcpy(buffer, *str);
+
   return buffer;
 }
 
@@ -801,7 +801,8 @@ void Connection::Emit(const char* message) {
 
   TRACE("CALLING EMIT");
   Nan::TryCatch tc;
-  Nan::MakeCallback(handle(), emit_f, 1, info);
+  Nan::AsyncResource *async_emit_f = new Nan::AsyncResource("libpq:connection:emit");
+  async_emit_f->runInAsyncScope(handle(), emit_f, 1, info);
   if(tc.HasCaught()) {
     Nan::FatalException(tc);
   }

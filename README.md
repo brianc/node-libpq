@@ -18,6 +18,8 @@ You need libpq installed & the `pg_config` program should be in your path.  You 
 $ npm install libpq
 ```
 
+> Note: for Node.js equal or greater to version 10.16.0 you need to have at least `OpenSSL 1.1.1` installed.
+
 ## use
 
 ```js
