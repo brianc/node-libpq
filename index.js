@@ -305,7 +305,8 @@ PQ.prototype.flush = function() {
 //escapes a literal and returns the escaped string
 //I'm not 100% sure this doesn't do any I/O...need to check that
 PQ.prototype.escapeLiteral = function(input) {
-  if(!input) return input;
+  if(input === null) return 'NULL';
+  else if(input === undefined) return input;
   return this.$escapeLiteral(input);
 };
 
