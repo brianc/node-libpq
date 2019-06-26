@@ -54,6 +54,24 @@ describe('async simple query', function() {
     })
   });
 
+  it('dispatches query with binary parameter', function(done) {
+    var pq = this.pq;
+    var string = 'fo\\o';
+    var buffer = helper.createBuffer(string, 'utf8');
+    var success = pq.sendQueryParams('SELECT $1::bytea as value', [buffer]);
+    assert(success, pq.errorMessage());
+    assert.strictEqual(pq.flush(), 0, 'Should have flushed query text & parameters');
+    consume(pq, function() {
+      assert.ifError(pq.errorMessage());
+      assert(pq.getResult());
+      assert.strictEqual(pq.getResult(), false);
+      assert.strictEqual(pq.ntuples(), 1);
+      var value = helper.parseHexOutput(pq.getvalue(0, 0));
+      assert.equal(value, string);
+      done();
+    })
+  });
+
   it('dispatches named query', function(done) {
     var pq = this.pq;
     var statementName = 'async-get-name';
@@ -85,6 +103,48 @@ describe('async simple query', function() {
         assert(pq.getResult());
         assert.equal(pq.ntuples(), 1);
         assert.equal(pq.getvalue(0, 0), 'Brian');
+
+        //call 'getResult' again to ensure we're finished
+        assert.strictEqual(pq.getResult(), false);
+        done();
+      });
+    });
+  });
+
+  it('dispatches named query with binary parameter', function(done) {
+    var pq = this.pq;
+    var statementName = 'async-get-binary-param';
+    var string = 'fo\\o';
+    var buffer = helper.createBuffer(string, 'utf8');
+    var success = pq.sendPrepare(statementName, 'SELECT $1::bytea as value', 1);
+    assert(success, pq.errorMessage());
+    assert.strictEqual(pq.flush(), 0, 'Should have flushed query text');
+    consume(pq, function() {
+      assert.ifError(pq.errorMessage());
+
+      //first time there should be a result
+      assert(pq.getResult());
+
+      //call 'getResult' until it returns false indicating
+      //there is no more input to consume
+      assert.strictEqual(pq.getResult(), false);
+
+      //since we only prepared a statement there should be
+      //0 tuples in the result
+      assert.equal(pq.ntuples(), 0);
+
+      //now execute the previously prepared statement
+      var success = pq.sendQueryPrepared(statementName, [buffer]);
+      assert(success, pq.errorMessage());
+      assert.strictEqual(pq.flush(), 0, 'Should have flushed parameters');
+      consume(pq, function() {
+        assert.ifError(pq.errorMessage());
+
+        //consume the result of the query execution
+        assert(pq.getResult());
+        assert.equal(pq.ntuples(), 1);
+        var value = helper.parseHexOutput(pq.getvalue(0, 0));
+        assert.equal(value, string);
 
         //call 'getResult' again to ensure we're finished
         assert.strictEqual(pq.getResult(), false);

@@ -102,9 +102,14 @@ NAN_METHOD(Connection::ExecParams) {
   TRACEF("Connection::Exec: %s\n", *commandText);
 
   v8::Local<v8::Array> jsParams = v8::Local<v8::Array>::Cast(info[1]);
+  v8::Local<v8::Array> jsParamFormats = v8::Local<v8::Array>::Cast(info[2]);
+  v8::Local<v8::Array> jsParamLengths = v8::Local<v8::Array>::Cast(info[3]);
 
   int numberOfParams = jsParams->Length();
+
   char **parameters = NewCStringArray(jsParams);
+  int *paramFormats = NewCIntArray(jsParamFormats);
+  int *paramLengths = NewCIntArray(jsParamLengths);
 
   PGresult* result = PQexecParams(
       self->pq,
@@ -112,12 +117,14 @@ NAN_METHOD(Connection::ExecParams) {
       numberOfParams,
       NULL, //const Oid* paramTypes[],
       parameters, //const char* const* paramValues[]
-      NULL, //const int* paramLengths[]
-      NULL, //const int* paramFormats[],
+      paramLengths, //const int* paramLengths[]
+      paramFormats, //const int* paramFormats[],
       0 //result format of text
       );
 
   DeleteCStringArray(parameters, numberOfParams);
+  delete [] paramFormats;
+  delete [] paramLengths;
 
   self->SetLastResult(result);
 }
@@ -150,21 +157,28 @@ NAN_METHOD(Connection::ExecPrepared) {
   TRACEF("Connection::ExecPrepared: %s\n", *statementName);
 
   v8::Local<v8::Array> jsParams = v8::Local<v8::Array>::Cast(info[1]);
+  v8::Local<v8::Array> jsParamFormats = v8::Local<v8::Array>::Cast(info[2]);
+  v8::Local<v8::Array> jsParamLengths = v8::Local<v8::Array>::Cast(info[3]);
 
   int numberOfParams = jsParams->Length();
-  char** parameters = NewCStringArray(jsParams);
+
+  char **parameters = NewCStringArray(jsParams);
+  int *paramFormats = NewCIntArray(jsParamFormats);
+  int *paramLengths = NewCIntArray(jsParamLengths);
 
   PGresult* result = PQexecPrepared(
       self->pq,
       *statementName,
       numberOfParams,
       parameters, //const char* const* paramValues[]
-      NULL, //const int* paramLengths[]
-      NULL, //const int* paramFormats[],
+      paramLengths, //const int* paramLengths[]
+      paramFormats, //const int* paramFormats[],
       0 //result format of text
       );
 
   DeleteCStringArray(parameters, numberOfParams);
+  delete [] paramFormats;
+  delete [] paramLengths;
 
   self->SetLastResult(result);
 }
@@ -354,9 +368,14 @@ NAN_METHOD(Connection::SendQueryParams) {
   TRACEF("Connection::SendQueryParams: %s\n", *commandText);
 
   v8::Local<v8::Array> jsParams = v8::Local<v8::Array>::Cast(info[1]);
+  v8::Local<v8::Array> jsParamFormats = v8::Local<v8::Array>::Cast(info[2]);
+  v8::Local<v8::Array> jsParamLengths = v8::Local<v8::Array>::Cast(info[3]);
 
   int numberOfParams = jsParams->Length();
+
   char** parameters = NewCStringArray(jsParams);
+  int *paramFormats = NewCIntArray(jsParamFormats);
+  int *paramLengths = NewCIntArray(jsParamLengths);
 
   int success = PQsendQueryParams(
       self->pq,
@@ -364,12 +383,14 @@ NAN_METHOD(Connection::SendQueryParams) {
       numberOfParams,
       NULL, //const Oid* paramTypes[],
       parameters, //const char* const* paramValues[]
-      NULL, //const int* paramLengths[]
-      NULL, //const int* paramFormats[],
+      paramLengths, //const int* paramLengths[]
+      paramFormats, //const int* paramFormats[],
       0 //result format of text
       );
 
   DeleteCStringArray(parameters, numberOfParams);
+  delete [] paramFormats;
+  delete [] paramLengths;
 
   info.GetReturnValue().Set(success == 1);
 }
@@ -404,21 +425,28 @@ NAN_METHOD(Connection::SendQueryPrepared) {
   TRACEF("Connection::SendQueryPrepared: %s\n", *statementName);
 
   v8::Local<v8::Array> jsParams = v8::Local<v8::Array>::Cast(info[1]);
+  v8::Local<v8::Array> jsParamFormats = v8::Local<v8::Array>::Cast(info[2]);
+  v8::Local<v8::Array> jsParamLengths = v8::Local<v8::Array>::Cast(info[3]);
 
   int numberOfParams = jsParams->Length();
-  char** parameters = NewCStringArray(jsParams);
+
+  char **parameters = NewCStringArray(jsParams);
+  int *paramFormats = NewCIntArray(jsParamFormats);
+  int *paramLengths = NewCIntArray(jsParamLengths);
 
   int success = PQsendQueryPrepared(
       self->pq,
       *statementName,
       numberOfParams,
       parameters, //const char* const* paramValues[]
-      NULL, //const int* paramLengths[]
-      NULL, //const int* paramFormats[],
+      paramLengths, //const int* paramLengths[]
+      paramFormats, //const int* paramFormats[],
       0 //result format of text
       );
 
   DeleteCStringArray(parameters, numberOfParams);
+  delete [] paramFormats;
+  delete [] paramLengths;
 
   info.GetReturnValue().Set(success == 1);
 }
@@ -784,6 +812,25 @@ void Connection::DeleteCStringArray(char** array, int length) {
     delete [] array[i];
   }
   delete [] array;
+}
+
+int* Connection::NewCIntArray(v8::Local<v8::Array> jsParams) {
+  Nan::HandleScope scope;
+
+  int len = jsParams->Length();
+
+  int* array = new int[len];
+
+  for(int i = 0; i < len; i++) {
+    v8::Local<v8::Value> val = Nan::Get(jsParams, i).ToLocalChecked();
+    if(val->IsNull()) {
+      array[i] = 0;
+      continue;
+    }
+    array[i] = Nan::To<int>(val).FromJust();
+  }
+
+  return array;
 }
 
 void Connection::Emit(const char* message) {

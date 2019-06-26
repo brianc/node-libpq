@@ -17,5 +17,20 @@ module.exports = {
     after(function() {
       this.pq.finish();
     });
+  },
+  parseHexOutput: function(hexx) {
+    var hex = hexx.toString().substring(2); // remove leading \x
+    var str = '';
+    for (var i = 0; i < hex.length; i += 2) {
+      str += String.fromCharCode(parseInt(hex.substr(i, 2), 16));
+    }
+    return str;
+  },
+  createBuffer: function(string, encoding) {
+    if (Number(process.version.match(/^v(\d+)/)[1]) <= 4) {
+      return new Buffer(string, encoding);
+    } else {
+      return Buffer.from(string, encoding);
+    }
   }
 };
