@@ -94,6 +94,9 @@ __sync__ sends a command to the server to execute a previously prepared statemen
 - `statementName` is a required string of the name of the prepared statement.
 - `parameters` are the parameters to pass to the prepared statement.
 
+##### `pq.describePrepared(statementName:string)`
+__sync__ sends a command to the server to describe a previously prepared statement. blocks until the results are returned. Use `pq.nparams` and `pq.paramtype` to obtain information about the parameters and `pq.nfields`, `pq.fname` and `pq.ftype` about the result columns of the prepared statement.
+
 ### Async Command Execution Functions
 
 In libpq the async command execution functions _only_ dispatch a request to the backend to run a query.  They do not start result fetching on their own.  Because libpq is a C api there is a somewhat complicated "dance" to retrieve the result information in a non-blocking way.  node-libpq attempts to do as little as possible to abstract over this; therefore, the following functions are only part of the story.  For a complete tutorial on how to dispatch & retrieve results from libpq in an async way you can [view the complete approach here](https://github.com/brianc/node-pg-native/blob/master/index.js#L105)
@@ -180,6 +183,14 @@ Retrieve the text value at a given tuple (row) and field (column) offset. Both o
 ##### `pq.getisnull(tupleNumber:int, fieldNumber:int):boolean`
 
 Returns `true` if the value at the given offsets is actually `null`.  Otherwise returns `false`.  This is because `pq.getvalue()` returns an empty string for both an actual empty string and for a `null` value.  Weird, huh?
+
+##### `pq.nparams():int`
+
+Returns the number of parameters a prepared statement expects.
+
+##### `pq.paramtype(paramNumber:int):int`
+
+Returns the `Oid` of the prepared statement's parameter at the given offset.
 
 ##### `pq.cmdStatus():string`
 

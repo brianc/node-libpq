@@ -21,6 +21,7 @@ NAN_MODULE_INIT(InitAddon) {
   Nan::SetPrototypeMethod(tpl, "$execParams", Connection::ExecParams);
   Nan::SetPrototypeMethod(tpl, "$prepare", Connection::Prepare);
   Nan::SetPrototypeMethod(tpl, "$execPrepared", Connection::ExecPrepared);
+  Nan::SetPrototypeMethod(tpl, "$describePrepared", Connection::DescribePrepared);
 
   //async query functions
   Nan::SetPrototypeMethod(tpl, "$sendQuery", Connection::SendQuery);
@@ -47,6 +48,8 @@ NAN_MODULE_INIT(InitAddon) {
   Nan::SetPrototypeMethod(tpl, "$ftype", Connection::Ftype);
   Nan::SetPrototypeMethod(tpl, "$getvalue", Connection::Getvalue);
   Nan::SetPrototypeMethod(tpl, "$getisnull", Connection::Getisnull);
+  Nan::SetPrototypeMethod(tpl, "$nparams", Connection::Nparams);
+  Nan::SetPrototypeMethod(tpl, "$paramtype", Connection::Paramtype);
   Nan::SetPrototypeMethod(tpl, "$cmdStatus", Connection::CmdStatus);
   Nan::SetPrototypeMethod(tpl, "$cmdTuples", Connection::CmdTuples);
   Nan::SetPrototypeMethod(tpl, "$resultStatus", Connection::ResultStatus);
