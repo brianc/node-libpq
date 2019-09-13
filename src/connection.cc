@@ -675,6 +675,8 @@ bool Connection::ConnectDB(const char* paramString) {
   uv_poll_init_socket(uv_default_loop(), &(this->read_watcher), fd);
   uv_poll_init_socket(uv_default_loop(), &(this->write_watcher), fd);
 
+  PQsetNoticeProcessor(this->pq, NoticeProcessor, (void *) this);
+
   TRACE("Connection::ConnectSync::Success");
   return true;
 }
@@ -786,7 +788,11 @@ void Connection::DeleteCStringArray(char** array, int length) {
   delete [] array;
 }
 
-void Connection::Emit(const char* message) {
+void Connection::Emit(const char* event) {
+  this->EmitMessage(event, "");
+}
+
+void Connection::EmitMessage(const char* event, const char* message) {
   Nan::HandleScope scope;
 
   TRACE("ABOUT TO EMIT EVENT");
@@ -796,14 +802,19 @@ void Connection::Emit(const char* message) {
   assert(emit_v->IsFunction());
   v8::Local<v8::Function> emit_f = emit_v.As<v8::Function>();
 
-  v8::Local<v8::String> eventName = Nan::New<v8::String>(message).ToLocalChecked();
-  v8::Local<v8::Value> info[1] = { eventName };
+  v8::Local<v8::String> eventName = Nan::New<v8::String>(event).ToLocalChecked();
+  v8::Local<v8::String> eventMessage = Nan::New<v8::String>(message).ToLocalChecked();
+  v8::Local<v8::Value> info[2] = { eventName, eventMessage };
 
   TRACE("CALLING EMIT");
   Nan::TryCatch tc;
   Nan::AsyncResource *async_emit_f = new Nan::AsyncResource("libpq:connection:emit");
-  async_emit_f->runInAsyncScope(handle(), emit_f, 1, info);
+  async_emit_f->runInAsyncScope(handle(), emit_f, 2, info);
   if(tc.HasCaught()) {
     Nan::FatalException(tc);
   }
+}
+void Connection::NoticeProcessor(void *arg, const char *message)
+{
+  ((Connection *) arg)->EmitMessage("notice", message);
 }
