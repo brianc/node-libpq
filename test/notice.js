@@ -8,6 +8,7 @@ describe('server notices', function() {
       assert.ifError(err);
       notices = []
       pq.on('notice', function(msg){notices.push(msg);});
+      pq.exec("SET SESSION client_min_messages=notice");
       pq.exec("DO $$BEGIN RAISE NOTICE 'test1'; RAISE WARNING 'test2'; END;$$");
       assert.equal(notices.length, 2);
       assert.equal(notices[0], 'NOTICE:  test1\n');
