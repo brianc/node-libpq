@@ -1,15 +1,15 @@
-var PQ = (module.exports = require("bindings")("addon.node").PQ);
-var assert = require("assert");
+var PQ = (module.exports = require('bindings')('addon.node').PQ);
+var assert = require('assert');
 
 //print out the include dir
 //if you want to include this in a binding.gyp file
 if (!module.parent) {
-  var path = require("path");
-  console.log(path.normalize(__dirname + "/src"));
+  var path = require('path');
+  console.log(path.normalize(__dirname + '/src'));
 }
 
-var EventEmitter = require("events").EventEmitter;
-var assert = require("assert");
+var EventEmitter = require('events').EventEmitter;
+var assert = require('assert');
 
 for (var key in EventEmitter.prototype) {
   PQ.prototype[key] = EventEmitter.prototype[key];
@@ -20,7 +20,7 @@ for (var key in EventEmitter.prototype) {
 PQ.prototype.connectSync = function (paramString) {
   this.connected = true;
   if (!paramString) {
-    paramString = "";
+    paramString = '';
   }
   var connected = this.$connectSync(paramString);
   if (!connected) {
@@ -34,14 +34,14 @@ PQ.prototype.connectSync = function (paramString) {
 //calls the callback with an error if there was one
 PQ.prototype.connect = function (paramString, cb) {
   this.connected = true;
-  if (typeof paramString == "function") {
+  if (typeof paramString == 'function') {
     cb = paramString;
-    paramString = "";
+    paramString = '';
   }
   if (!paramString) {
-    paramString = "";
+    paramString = '';
   }
-  assert(cb, "Must provide a connection callback");
+  assert(cb, 'Must provide a connection callback');
   if (process.domain) {
     cb = process.domain.bind(cb);
   }
@@ -75,7 +75,7 @@ PQ.prototype.finish = function () {
 //consume additional error details via PQ#errorMessage & friends
 PQ.prototype.exec = function (commandText) {
   if (!commandText) {
-    commandText = "";
+    commandText = '';
   }
   this.$exec(commandText);
 };
@@ -87,13 +87,13 @@ PQ.prototype.exec = function (commandText) {
 //consume additional error details via PQ#errorMessage & friends
 PQ.prototype.execParams = function (commandText, parameters) {
   if (!commandText) {
-    commandText = "";
+    commandText = '';
   }
   if (!parameters) {
     parameters = [];
   }
 
-  assert(Array.isArray(parameters), "Parameters must be an array");
+  assert(Array.isArray(parameters), 'Parameters must be an array');
   this.$execParams(commandText, parameters);
 };
 
@@ -103,12 +103,12 @@ PQ.prototype.execParams = function (commandText, parameters) {
 //returns false if there was an error
 //consume additional error details via PQ#errorMessage & friends
 PQ.prototype.prepare = function (statementName, commandText, nParams) {
-  assert.equal(arguments.length, 3, "Must supply 3 arguments");
+  assert.equal(arguments.length, 3, 'Must supply 3 arguments');
   if (!statementName) {
-    statementName = "";
+    statementName = '';
   }
   if (!commandText) {
-    commandText = "";
+    commandText = '';
   }
   nParams = Number(nParams) || 0;
   this.$prepare(statementName, commandText, nParams);
@@ -121,13 +121,13 @@ PQ.prototype.prepare = function (statementName, commandText, nParams) {
 //consume additional error details via PQ#errorMessage & friends
 PQ.prototype.execPrepared = function (statementName, parameters) {
   if (!statementName) {
-    statementName = "";
+    statementName = '';
   }
   if (!parameters) {
     parameters = [];
   }
 
-  assert(Array.isArray(parameters), "Parameters must be an array");
+  assert(Array.isArray(parameters), 'Parameters must be an array');
   this.$execPrepared(statementName, parameters);
 };
 
@@ -135,7 +135,7 @@ PQ.prototype.execPrepared = function (statementName, parameters) {
 //returns true if sent, or false if there was a send failure
 PQ.prototype.sendQuery = function (commandText) {
   if (!commandText) {
-    commandText = "";
+    commandText = '';
   }
   return this.$sendQuery(commandText);
 };
@@ -144,25 +144,25 @@ PQ.prototype.sendQuery = function (commandText) {
 //returns true if sent, or false if there was a send failure
 PQ.prototype.sendQueryParams = function (commandText, parameters) {
   if (!commandText) {
-    commandText = "";
+    commandText = '';
   }
   if (!parameters) {
     parameters = [];
   }
 
-  assert(Array.isArray(parameters), "Parameters must be an array");
+  assert(Array.isArray(parameters), 'Parameters must be an array');
   return this.$sendQueryParams(commandText, parameters);
 };
 
 //send a command to prepare a named query in async mode
 //returns true if sent, or false if there was a send failure
 PQ.prototype.sendPrepare = function (statementName, commandText, nParams) {
-  assert.equal(arguments.length, 3, "Must supply 3 arguments");
+  assert.equal(arguments.length, 3, 'Must supply 3 arguments');
   if (!statementName) {
-    statementName = "";
+    statementName = '';
   }
   if (!commandText) {
-    commandText = "";
+    commandText = '';
   }
   nParams = Number(nParams) || 0;
   return this.$sendPrepare(statementName, commandText, nParams);
@@ -172,13 +172,13 @@ PQ.prototype.sendPrepare = function (statementName, commandText, nParams) {
 //returns true if sent, or false if there was a send failure
 PQ.prototype.sendQueryPrepared = function (statementName, parameters) {
   if (!statementName) {
-    statementName = "";
+    statementName = '';
   }
   if (!parameters) {
     parameters = [];
   }
 
-  assert(Array.isArray(parameters), "Parameters must be an array");
+  assert(Array.isArray(parameters), 'Parameters must be an array');
   return this.$sendQueryPrepared(statementName, parameters);
 };
 
@@ -264,7 +264,7 @@ PQ.prototype.cmdTuples = function () {
 //PQ#consumeInput instead of letting node pull the data off the socket
 //http://www.postgresql.org/docs/9.1/static/libpq-async.html
 PQ.prototype.startReader = function () {
-  assert(this.connected, "Must be connected to start reader");
+  assert(this.connected, 'Must be connected to start reader');
   this.$startRead();
 };
 
@@ -274,9 +274,9 @@ PQ.prototype.stopReader = function () {
 };
 
 PQ.prototype.writable = function (cb) {
-  assert(this.connected, "Must be connected to start writer");
+  assert(this.connected, 'Must be connected to start writer');
   this.$startWrite();
-  return this.once("writable", cb);
+  return this.once('writable', cb);
 };
 
 //returns boolean - false indicates an error condition
