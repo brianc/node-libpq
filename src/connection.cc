@@ -803,6 +803,7 @@ void Connection::Emit(const char* message) {
   Nan::TryCatch tc;
   Nan::AsyncResource *async_emit_f = new Nan::AsyncResource("libpq:connection:emit");
   async_emit_f->runInAsyncScope(handle(), emit_f, 1, info);
+  delete async_emit_f;
   if(tc.HasCaught()) {
     Nan::FatalException(tc);
   }
