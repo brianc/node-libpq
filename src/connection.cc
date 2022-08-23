@@ -4,10 +4,10 @@ Connection::Connection() : Nan::ObjectWrap() {
   TRACE("Connection::Constructor");
   pq = NULL;
   lastResult = NULL;
-  read_watcher.data = this;
-  write_watcher.data = this;
   is_reading = false;
   is_reffed = false;
+  is_success_poll_init = false;
+  poll_watcher.data = this;
 }
 
 NAN_METHOD(Connection::Create) {
@@ -26,7 +26,9 @@ NAN_METHOD(Connection::ConnectSync) {
   self->Ref();
   self->is_reffed = true;
   bool success = self->ConnectDB(*Nan::Utf8String(info[0]));
-
+  if (success) {
+    self->InitPollSocket();
+  }
   info.GetReturnValue().Set(success);
 }
 
@@ -43,6 +45,7 @@ NAN_METHOD(Connection::Connect) {
   LOG("Instantiated worker, running it...");
   self->Ref();
   self->is_reffed = true;
+  worker->SaveToPersistent(Nan::New("PQConnectAsyncWorker").ToLocalChecked(), info.This());
   Nan::AsyncQueueWorker(worker);
 }
 
@@ -69,12 +72,15 @@ NAN_METHOD(Connection::Finish) {
   Connection *self = NODE_THIS();
 
   self->ReadStop();
+  if (self->is_success_poll_init) {
+    uv_close((uv_handle_t*) &self->poll_watcher, NULL);
+  }
   self->ClearLastResult();
   PQfinish(self->pq);
   self->pq = NULL;
   if(self->is_reffed) {
     self->is_reffed = false;
-    //self->Unref();
+    self->Unref();
   }
 }
 
@@ -671,12 +677,18 @@ bool Connection::ConnectDB(const char* paramString) {
     return false;
   }
 
-  int fd = PQsocket(this->pq);
-  uv_poll_init_socket(uv_default_loop(), &(this->read_watcher), fd);
-  uv_poll_init_socket(uv_default_loop(), &(this->write_watcher), fd);
-
-  TRACE("Connection::ConnectSync::Success");
+  TRACE("Connection::Connect::Success");
   return true;
+}
+
+
+void Connection::InitPollSocket() {
+  int fd = PQsocket(this->pq);
+  int socketInitStatus = uv_poll_init_socket(uv_default_loop(), &(this->poll_watcher), fd);
+
+  if (socketInitStatus == 0) {
+    is_success_poll_init = true;
+  }
 }
 
 char * Connection::ErrorMessage() {
@@ -710,7 +722,7 @@ void Connection::on_io_writable(uv_poll_t* handle, int status, int revents) {
 void Connection::ReadStart() {
   LOG("Connection::ReadStart:starting read watcher");
   is_reading = true;
-  uv_poll_start(&read_watcher, UV_READABLE, on_io_readable);
+  uv_poll_start(&poll_watcher, UV_READABLE, on_io_readable);
   LOG("Connection::ReadStart:started read watcher");
 }
 
@@ -718,19 +730,19 @@ void Connection::ReadStop() {
   LOG("Connection::ReadStop:stoping read watcher");
   if(!is_reading) return;
   is_reading = false;
-  uv_poll_stop(&read_watcher);
+  uv_poll_stop(&poll_watcher);
   LOG("Connection::ReadStop:stopped read watcher");
 }
 
 void Connection::WriteStart() {
   LOG("Connection::WriteStart:starting write watcher");
-  uv_poll_start(&write_watcher, UV_WRITABLE, on_io_writable);
+  uv_poll_start(&poll_watcher, UV_WRITABLE, on_io_writable);
   LOG("Connection::WriteStart:started write watcher");
 }
 
 void Connection::WriteStop() {
   LOG("Connection::WriteStop:stoping write watcher");
-  uv_poll_stop(&write_watcher);
+  uv_poll_stop(&poll_watcher);
 }
 
 
@@ -789,20 +801,14 @@ void Connection::DeleteCStringArray(char** array, int length) {
 void Connection::Emit(const char* message) {
   Nan::HandleScope scope;
 
-  TRACE("ABOUT TO EMIT EVENT");
-  v8::Local<v8::Object> jsInstance = handle();
-  TRACE("GETTING 'emit' FUNCTION INSTANCE");
-  v8::Local<v8::Value> emit_v = Nan::Get(jsInstance, Nan::New<v8::String>("emit").ToLocalChecked()).ToLocalChecked();
-  assert(emit_v->IsFunction());
-  v8::Local<v8::Function> emit_f = emit_v.As<v8::Function>();
-
-  v8::Local<v8::String> eventName = Nan::New<v8::String>(message).ToLocalChecked();
-  v8::Local<v8::Value> info[1] = { eventName };
+  v8::Local<v8::Value> info[1] = {
+    Nan::New<v8::String>(message).ToLocalChecked()
+  };
 
   TRACE("CALLING EMIT");
   Nan::TryCatch tc;
   Nan::AsyncResource *async_emit_f = new Nan::AsyncResource("libpq:connection:emit");
-  async_emit_f->runInAsyncScope(handle(), emit_f, 1, info);
+  async_emit_f->runInAsyncScope(handle(), "emit", 1, info);
   delete async_emit_f;
   if(tc.HasCaught()) {
     Nan::FatalException(tc);

@@ -8,6 +8,7 @@ public:
   ConnectAsyncWorker(v8::Local<v8::String> paramString, Connection* conn, Nan::Callback* callback);
   ~ConnectAsyncWorker();
   void Execute();
+  void HandleOKCallback();
 
 private:
   Connection* conn;

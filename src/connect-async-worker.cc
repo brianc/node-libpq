@@ -17,3 +17,10 @@ ConnectAsyncWorker::ConnectAsyncWorker(v8::Local<v8::String> paramString, Connec
       SetErrorMessage(conn->ErrorMessage());
     }
   }
+
+  void ConnectAsyncWorker::HandleOKCallback() {
+    Nan::HandleScope scope;
+
+    conn->InitPollSocket();
+    callback->Call(0, NULL, async_resource);
+}
