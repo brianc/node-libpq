@@ -1,6 +1,6 @@
 {
   "name": "libpq",
-  "version": "1.8.11",
+  "version": "1.8.12",
   "description": "Low-level native bindings to PostgreSQL libpq",
   "main": "index.js",
   "keywords": [
