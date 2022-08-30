@@ -31,4 +31,15 @@ describe('prepare and execPrepared', function () {
       );
     });
   });
+
+  describe('describing a prepared statement', function() {
+    it('works properly', function() {
+      this.pq.describePrepared(statementName);
+      assert.strictEqual(this.pq.nparams(), 1)
+      assert.strictEqual(this.pq.paramtype(0), 25)
+      assert.strictEqual(this.pq.nfields(), 1);
+      assert.strictEqual(this.pq.fname(0), 'name');
+      assert.strictEqual(this.pq.ftype(0), 25);
+    });
+  });
 });
