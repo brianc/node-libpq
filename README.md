@@ -169,6 +169,15 @@ Retrieve the number of fields (columns) from the result.
 
 Retrieve the name of the field (column) at the given offset. Offset starts at 0.
 
+##### `pq.ftable(fieldNumber:int):int`
+
+Retrieve the `Oid` of the table at the given offset. Offset starts at 0.
+
+##### `pq.ftablenum(fieldNumber:int):int`
+
+Retrieve the column number (within its table) of the field at the given offset. Offset starts at 0. 
+Query-result column numbers start at 0, but table columns have nonzero numbers.
+
 ##### `pq.ftype(fieldNumber:int):int`
 
 Retrieve the `Oid` of the field (column) at the given offset. Offset starts at 0.

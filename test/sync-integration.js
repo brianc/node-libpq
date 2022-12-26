@@ -26,5 +26,12 @@ describe('low-level query integration tests', function () {
       assert.strictEqual(this.pq.getvalue(2, 1), '');
       assert.strictEqual(this.pq.getisnull(2, 1), true);
     });
+
+    it('has correct identifiers', function() {
+      assert.notEqual(this.pq.ftable(0), 0);
+      assert.notEqual(this.pq.ftable(1), 0);
+      assert.strictEqual(this.pq.ftablecol(0), 1);
+      assert.strictEqual(this.pq.ftablecol(1), 2);
+    });
   });
 });
