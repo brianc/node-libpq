@@ -243,6 +243,27 @@ var msg = {
 }
 ```
 
+##### `pq.on("notify", callback:function)`
+
+Receives `DEBUG`, `LOG`, `INFO`, `NOTICE` and `WARNING` notifications.
+
+- `callback` is mandatory. It is called with an object similar to what is
+  returned by the (yet undocumented) function `pq.resultErrorFields()`.
+
+The format of the `notify` event payload is as follows:
+
+```js
+var notification = {
+  severity: 'WARNING',
+  sqlState: '01000',
+  messagePrimary: 'this is a warning message',
+  context: 'PL/pgSQL function inline_code_block line 1 at RAISE',
+  sourceFile: 'pl_exec.c',
+  sourceLine: '3917',
+  sourceFunction: 'exec_stmt_raise'
+}
+```
+
 ### COPY IN/OUT
 
 ##### `pq.putCopyData(buffer:Buffer):int`
@@ -296,7 +317,7 @@ Returns the version of the connected PostgreSQL backend server as a number.
 $ npm test
 ```
 
-To run the tests you need a PostgreSQL backend reachable by typing `psql` with no connection parameters in your terminal. The tests use [environment variables](http://www.postgresql.org/docs/9.3/static/libpq-envars.html) to connect to the backend. 
+To run the tests you need a PostgreSQL backend reachable by typing `psql` with no connection parameters in your terminal. The tests use [environment variables](http://www.postgresql.org/docs/9.3/static/libpq-envars.html) to connect to the backend.
 
 An example of supplying a specific host the tests:
 
