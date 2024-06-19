@@ -56,6 +56,14 @@ describe('result checking', function() {
     assert.equal(this.pq.fname(0), 'my_col');
   });
 
+  it('has table oid zero', function() {
+    assert.strictEqual(this.pq.ftable(0), 0);
+  });
+
+  it('has column number of the query-result', function() {
+    assert.strictEqual(this.pq.ftablecol(0), 0);
+  });
+
   it('has oid type of timestamptz', function() {
     assert.strictEqual(this.pq.ftype(0), 1184);
   });

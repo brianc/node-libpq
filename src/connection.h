@@ -21,6 +21,8 @@ class Connection : public Nan::ObjectWrap {
     static NAN_METHOD(Ntuples);
     static NAN_METHOD(Nfields);
     static NAN_METHOD(Fname);
+    static NAN_METHOD(Ftable);
+    static NAN_METHOD(Ftablecol);
     static NAN_METHOD(Ftype);
     static NAN_METHOD(Getvalue);
     static NAN_METHOD(Getisnull);
