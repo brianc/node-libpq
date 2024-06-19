@@ -176,6 +176,21 @@ NAN_METHOD(Connection::ExecPrepared) {
   self->SetLastResult(result);
 }
 
+NAN_METHOD(Connection::DescribePrepared) {
+  Connection *self = NODE_THIS();
+
+  Nan::Utf8String statementName(info[0]);
+
+  TRACEF("Connection::DescribePrepared: %s\n", *statementName);
+
+  PGresult* result = PQdescribePrepared(
+      self->pq,
+      *statementName
+      );
+
+  self->SetLastResult(result);
+}
+
 
 NAN_METHOD(Connection::Clear) {
   TRACE("Connection::Clear");
@@ -280,6 +295,28 @@ NAN_METHOD(Connection::Getisnull) {
   int rowValue = PQgetisnull(res, rowNumber, colNumber);
 
   info.GetReturnValue().Set(rowValue == 1);
+}
+
+NAN_METHOD(Connection::Nparams) {
+  TRACE("Connection::Nparams");
+  Connection *self = NODE_THIS();
+
+  PGresult* res = self->lastResult;
+
+  int nparams = PQnparams(res);
+
+  info.GetReturnValue().Set(nparams);
+}
+
+NAN_METHOD(Connection::Paramtype) {
+  TRACE("Connection::Paramtype");
+  Connection *self = NODE_THIS();
+
+  PGresult* res = self->lastResult;
+
+  int paramType = PQparamtype(res, Nan::To<int32_t>(info[0]).FromJust());
+
+  info.GetReturnValue().Set(paramType);
 }
 
 NAN_METHOD(Connection::CmdStatus) {

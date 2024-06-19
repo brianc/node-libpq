@@ -131,6 +131,16 @@ PQ.prototype.execPrepared = function (statementName, parameters) {
   this.$execPrepared(statementName, parameters);
 };
 
+//SYNC describes a named, prepared query and stores the result
+//immediately stores the results within the PQ object for consumption with
+//nparams, paramtype, nfields, etc...
+PQ.prototype.describePrepared = function(statementName) {
+  if(!statementName) {
+    statementName = '';
+  }
+  this.$describePrepared(statementName);
+};
+
 //send a command to begin executing a query in async mode
 //returns true if sent, or false if there was a send failure
 PQ.prototype.sendQuery = function (commandText) {
@@ -255,6 +265,16 @@ PQ.prototype.getvalue = function (row, col) {
 //returns true/false if the value is null
 PQ.prototype.getisnull = function (row, col) {
   return this.$getisnull(row, col);
+};
+
+//returns the number of parameters of a prepared statement
+PQ.prototype.nparams = function() {
+  return this.$nparams();
+};
+
+//returns the data type of the indicated statement parameter (starting from 0)
+PQ.prototype.paramtype = function(n) {
+  return this.$paramtype(n);
 };
 
 //returns the status of the command

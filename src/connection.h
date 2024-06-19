@@ -17,6 +17,7 @@ class Connection : public Nan::ObjectWrap {
     static NAN_METHOD(ExecParams);
     static NAN_METHOD(Prepare);
     static NAN_METHOD(ExecPrepared);
+    static NAN_METHOD(DescribePrepared);
     static NAN_METHOD(Clear);
     static NAN_METHOD(Ntuples);
     static NAN_METHOD(Nfields);
@@ -26,6 +27,8 @@ class Connection : public Nan::ObjectWrap {
     static NAN_METHOD(Ftype);
     static NAN_METHOD(Getvalue);
     static NAN_METHOD(Getisnull);
+    static NAN_METHOD(Nparams);
+    static NAN_METHOD(Paramtype);
     static NAN_METHOD(CmdStatus);
     static NAN_METHOD(CmdTuples);
     static NAN_METHOD(ResultStatus);
