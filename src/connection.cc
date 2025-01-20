@@ -238,7 +238,7 @@ NAN_METHOD(Connection::Ftable) {
 
   PGresult* res = self->lastResult;
 
-  int table = PQftable(res, info[0]->Int32Value());
+  int table = PQftable(res, Nan::To<int32_t>(info[0]).FromJust());
 
   info.GetReturnValue().Set(table);
 }
@@ -249,7 +249,7 @@ NAN_METHOD(Connection::Ftablecol) {
 
   PGresult* res = self->lastResult;
 
-  int tablecol = PQftablecol(res, info[0]->Int32Value());
+  int tablecol = PQftablecol(res, Nan::To<int32_t>(info[0]).FromJust());
 
   info.GetReturnValue().Set(tablecol);
 }
