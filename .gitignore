@@ -2,3 +2,6 @@ node_modules
 build
 _site
 .DS_Store
+.pnp.cjs
+.pnp.loader.mjs
+.yarn
