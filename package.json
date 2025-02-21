@@ -1,5 +1,5 @@
 {
-  "name": "libpq",
+  "name": "@kingdanx/libpq",
   "version": "1.8.14",
   "description": "Low-level native bindings to PostgreSQL libpq",
   "main": "index.js",
