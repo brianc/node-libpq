@@ -21,7 +21,7 @@
         'src/addon.cc'
       ],
       'include_dirs': [
-        '<!@(<(pgconfig) --includedir)',
+        '<!(<(pgconfig) --includedir)',
         '<!(node -e "require(\'nan\')")'
       ],
       'conditions' : [
