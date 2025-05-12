@@ -36,7 +36,11 @@
                 '<!@(<(pgconfig) --libdir)\\'
               ]
             },
-          }
+          },
+          'include_dirs': [
+            '<!(<(pgconfig) --includedir)',
+            '<!(node -e "require(\'nan\')")'
+          ]
         }, { # OS!="win"
           'libraries' : ['-lpq -L<!@(<(pgconfig) --libdir)'],
           'ldflags' : ['<!@(<(pgconfig) --ldflags)']
