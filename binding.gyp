@@ -21,7 +21,7 @@
         'src/addon.cc'
       ],
       'include_dirs': [
-        '<!(<(pgconfig) --includedir)',
+        '<!@(<(pgconfig) --includedir)',
         '<!(node -e "require(\'nan\')")'
       ],
       'conditions' : [
@@ -36,10 +36,14 @@
                 '<!@(<(pgconfig) --libdir)\\'
               ]
             },
-          }
+          },
+          'include_dirs': [
+            '<!(<(pgconfig) --includedir)',
+            '<!(node -e "require(\'nan\')")'
+          ]
         }, { # OS!="win"
           'libraries' : ['-lpq -L<!@(<(pgconfig) --libdir)'],
-          'ldflags' : ['<!@(<(pgconfig) --ldflags)']
+          'ldflags' : ['<!(<(pgconfig) --ldflags)']
         }],
         ['OS=="mac"', {
           'xcode_settings': {
