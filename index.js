@@ -9,11 +9,8 @@ if (!module.parent) {
 }
 
 var EventEmitter = require('events').EventEmitter;
-var assert = require('assert');
 
-for (var key in EventEmitter.prototype) {
-  PQ.prototype[key] = EventEmitter.prototype[key];
-}
+Object.setPrototypeOf(PQ.prototype, EventEmitter.prototype)
 
 //SYNC connects to the server
 //throws an exception in the event of a connection error
@@ -48,19 +45,13 @@ PQ.prototype.connect = function (paramString, cb) {
   this.$connect(paramString, cb);
 };
 
-PQ.prototype.errorMessage = function () {
-  return this.$getLastErrorMessage();
-};
+PQ.prototype.errorMessage = PQ.prototype.$getLastErrorMessage;
 
 //returns an int for the fd of the socket
-PQ.prototype.socket = function () {
-  return this.$socket();
-};
+PQ.prototype.socket = PQ.prototype.$socket;
 
 // return server version number e.g. 90300
-PQ.prototype.serverVersion = function () {
-  return this.$serverVersion();
-};
+PQ.prototype.serverVersion = PQ.prototype.$serverVersion;
 
 //finishes the connection & closes it
 PQ.prototype.finish = function () {
@@ -199,93 +190,59 @@ PQ.prototype.sendQueryPrepared = function (statementName, parameters) {
 //or false if there was no pending result. if there was no pending result
 //the last found result is not overwritten so you can call getResult as many
 //times as you want, and you'll always have the last available result for consumption
-PQ.prototype.getResult = function () {
-  return this.$getResult();
-};
+PQ.prototype.getResult = PQ.prototype.$getResult;
 
 //returns a text of the enum associated with the result
 //usually just PGRES_COMMAND_OK or PGRES_FATAL_ERROR
-PQ.prototype.resultStatus = function () {
-  return this.$resultStatus();
-};
+PQ.prototype.resultStatus = PQ.prototype.$resultStatus;
 
-PQ.prototype.resultErrorMessage = function () {
-  return this.$resultErrorMessage();
-};
+PQ.prototype.resultErrorMessage = PQ.prototype.$resultErrorMessage;
 
-PQ.prototype.resultErrorFields = function () {
-  return this.$resultErrorFields();
-};
+PQ.prototype.resultErrorFields = PQ.prototype.$resultErrorFields;
 
 //free the memory associated with a result
 //this is somewhat handled for you within the c/c++ code
 //by never allowing the code to 'leak' a result. still,
 //if you absolutely want to free it yourself, you can use this.
-PQ.prototype.clear = function () {
-  this.$clear();
-};
+PQ.prototype.clear = PQ.prototype.$clear;
 
 //returns the number of tuples (rows) in the result set
-PQ.prototype.ntuples = function () {
-  return this.$ntuples();
-};
+PQ.prototype.ntuples = PQ.prototype.$ntuples;
 
 //returns the number of fields (columns) in the result set
-PQ.prototype.nfields = function () {
-  return this.$nfields();
-};
+PQ.prototype.nfields = PQ.prototype.$nfields;
 
 //returns the name of the field (column) at the given offset
-PQ.prototype.fname = function (offset) {
-  return this.$fname(offset);
-};
+PQ.prototype.fname = PQ.prototype.$fname;
 
 //returns the Oid of the table of the field at the given offset
-PQ.prototype.ftable = function(offset) {
-  return this.$ftable(offset);
-};
+PQ.prototype.ftable = PQ.prototype.$ftable;
 
 //returns the column number (within its table) of the field at the given offset
-PQ.prototype.ftablecol = function(offset) {
-  return this.$ftablecol(offset);
-};
+PQ.prototype.ftablecol = PQ.prototype.$ftablecol;
 
 //returns the Oid of the type for the given field
-PQ.prototype.ftype = function (offset) {
-  return this.$ftype(offset);
-};
+PQ.prototype.ftype = PQ.prototype.$ftype;
 
 //returns a text value at the given row/col
 //if the value is null this still returns empty string
 //so you need to use PQ#getisnull to determine
-PQ.prototype.getvalue = function (row, col) {
-  return this.$getvalue(row, col);
-};
+PQ.prototype.getvalue = PQ.prototype.$getvalue;
 
 //returns true/false if the value is null
-PQ.prototype.getisnull = function (row, col) {
-  return this.$getisnull(row, col);
-};
+PQ.prototype.getisnull = PQ.prototype.$getisnull;
 
 //returns the number of parameters of a prepared statement
-PQ.prototype.nparams = function() {
-  return this.$nparams();
-};
+PQ.prototype.nparams = PQ.prototype.$nparams;
 
 //returns the data type of the indicated statement parameter (starting from 0)
-PQ.prototype.paramtype = function(n) {
-  return this.$paramtype(n);
-};
+PQ.prototype.paramtype = PQ.prototype.$paramtype;
 
 //returns the status of the command
-PQ.prototype.cmdStatus = function () {
-  return this.$cmdStatus();
-};
+PQ.prototype.cmdStatus = PQ.prototype.$cmdStatus;
 
 //returns the tuples in the command
-PQ.prototype.cmdTuples = function () {
-  return this.$cmdTuples();
-};
+PQ.prototype.cmdTuples = PQ.prototype.$cmdTuples;
 
 //starts the 'read ready' libuv socket listener.
 //Once the socket becomes readable, the PQ instance starts
@@ -299,9 +256,7 @@ PQ.prototype.startReader = function () {
 };
 
 //suspends the libuv socket 'read ready' listener
-PQ.prototype.stopReader = function () {
-  this.$stopRead();
-};
+PQ.prototype.stopReader = PQ.prototype.$stopRead;
 
 PQ.prototype.writable = function (cb) {
   assert(this.connected, 'Must be connected to start writer');
@@ -311,17 +266,13 @@ PQ.prototype.writable = function (cb) {
 
 //returns boolean - false indicates an error condition
 //e.g. a failure to consume input
-PQ.prototype.consumeInput = function () {
-  return this.$consumeInput();
-};
+PQ.prototype.consumeInput = PQ.prototype.$consumeInput;
 
 //returns true if PQ#getResult would cause
 //the process to block waiting on results
 //false indicates PQ#getResult can be called
 //with an assurance of not blocking
-PQ.prototype.isBusy = function () {
-  return this.$isBusy();
-};
+PQ.prototype.isBusy = PQ.prototype.$isBusy;
 
 //toggles the socket blocking on outgoing writes
 PQ.prototype.setNonBlocking = function (truthy) {
@@ -330,16 +281,12 @@ PQ.prototype.setNonBlocking = function (truthy) {
 
 //returns true if the connection is non-blocking on writes, otherwise false
 //note: connection is always non-blocking on reads if using the send* methods
-PQ.prototype.isNonBlocking = function () {
-  return this.$isNonBlocking();
-};
+PQ.prototype.isNonBlocking = PQ.prototype.$isNonBlocking;
 
 //returns 1 if socket is not write-ready
 //returns 0 if all data flushed to socket
 //returns -1 if there is an error
-PQ.prototype.flush = function () {
-  return this.$flush();
-};
+PQ.prototype.flush = PQ.prototype.$flush;
 
 //escapes a literal and returns the escaped string
 //I'm not 100% sure this doesn't do any I/O...need to check that
@@ -356,9 +303,7 @@ PQ.prototype.escapeIdentifier = function (input) {
 //Checks for any notifications which may have arrivied
 //and returns them as a javascript object: {relname: 'string', extra: 'string', be_pid: int}
 //if there are no pending notifications this returns undefined
-PQ.prototype.notifies = function () {
-  return this.$notifies();
-};
+PQ.prototype.notifies = PQ.prototype.$notifies;
 
 //Sends a buffer of binary data to the server
 //returns 1 if the command was sent successfully
@@ -393,6 +338,4 @@ PQ.prototype.getCopyData = function (async) {
   return this.$getCopyData(!!async);
 };
 
-PQ.prototype.cancel = function () {
-  return this.$cancel();
-};
+PQ.prototype.cancel = PQ.prototype.$cancel;
