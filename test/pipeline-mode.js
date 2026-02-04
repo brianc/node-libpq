@@ -138,8 +138,8 @@ describe('pipeline mode', function () {
 
       // Send a valid query
       pq.sendQueryParams('SELECT $1::int as num', ['1']);
-      // Send an invalid query (will cause error)
-      pq.sendQuery('SELECT * FROM nonexistent_table_xyz_12345');
+      // Send an invalid query (syntax error will definitely fail)
+      pq.sendQuery('SELEC INVALID SYNTAX');
       // Send another valid query (will be skipped due to error)
       pq.sendQueryParams('SELECT $1::int as num', ['3']);
       // Send sync
