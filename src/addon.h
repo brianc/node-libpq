@@ -13,6 +13,10 @@
 #define MORE_ERROR_FIELDS_SUPPORTED
 #endif
 
+#if PG_VERSION_NUM >= 140000
+#define PIPELINE_MODE_SUPPORTED
+#endif
+
 #include "connection.h"
 #include "connect-async-worker.h"
 

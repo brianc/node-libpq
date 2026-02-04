@@ -727,6 +727,59 @@ NAN_METHOD(Connection::Cancel) {
   delete[] errBuff;
 }
 
+#ifdef PIPELINE_MODE_SUPPORTED
+NAN_METHOD(Connection::EnterPipelineMode) {
+  TRACE("Connection::EnterPipelineMode");
+
+  Connection* self = NODE_THIS();
+
+  int result = PQenterPipelineMode(self->pq);
+
+  info.GetReturnValue().Set(result == 1);
+}
+
+NAN_METHOD(Connection::ExitPipelineMode) {
+  TRACE("Connection::ExitPipelineMode");
+
+  Connection* self = NODE_THIS();
+
+  int result = PQexitPipelineMode(self->pq);
+
+  info.GetReturnValue().Set(result == 1);
+}
+
+NAN_METHOD(Connection::PipelineStatus) {
+  TRACE("Connection::PipelineStatus");
+
+  Connection* self = NODE_THIS();
+
+  PGpipelineStatus status = PQpipelineStatus(self->pq);
+
+  // PQ_PIPELINE_OFF = 0, PQ_PIPELINE_ON = 1, PQ_PIPELINE_ABORTED = 2
+  info.GetReturnValue().Set(static_cast<int>(status));
+}
+
+NAN_METHOD(Connection::PipelineSync) {
+  TRACE("Connection::PipelineSync");
+
+  Connection* self = NODE_THIS();
+
+  int result = PQpipelineSync(self->pq);
+
+  info.GetReturnValue().Set(result == 1);
+}
+
+NAN_METHOD(Connection::SendFlushRequest) {
+  TRACE("Connection::SendFlushRequest");
+
+  Connection* self = NODE_THIS();
+
+  int result = PQsendFlushRequest(self->pq);
+
+  info.GetReturnValue().Set(result == 1);
+}
+#endif
+
 bool Connection::ConnectDB(const char* paramString) {
   TRACEF("Connection::ConnectDB:Connection parameters: %s\n", paramString);
   this->pq = PQconnectdb(paramString);
