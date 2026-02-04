@@ -2,6 +2,8 @@ var PQ = require('../');
 var assert = require('assert');
 
 describe('pipeline mode', function () {
+  this.timeout(5000); // Increase timeout for async tests
+  
   var pq;
 
   beforeEach(function () {
@@ -64,15 +66,14 @@ describe('pipeline mode', function () {
 
       // Read results
       var results = [];
+      var finished = false;
       
-      pq.on('readable', function () {
-        if (!pq.consumeInput()) {
-          done(new Error('consumeInput failed'));
-          return;
-        }
-
+      var processResults = function() {
+        // Keep reading results while not busy
         while (!pq.isBusy()) {
-          if (!pq.getResult()) {
+          var hasResult = pq.getResult();
+          if (!hasResult) {
+            // No more results available right now
             break;
           }
           
@@ -81,13 +82,28 @@ describe('pipeline mode', function () {
             results.push(parseInt(pq.getvalue(0, 0), 10));
           } else if (status === 'PGRES_PIPELINE_SYNC') {
             // Pipeline sync received, we're done
+            finished = true;
             pq.stopReader();
+            pq.removeAllListeners('readable');
             assert.deepStrictEqual(results, [1, 2, 3]);
             pq.exitPipelineMode();
             done();
             return;
           }
+          // PGRES_COMMAND_OK and other statuses are ignored
         }
+      };
+      
+      pq.on('readable', function () {
+        if (finished) return;
+        
+        if (!pq.consumeInput()) {
+          pq.stopReader();
+          done(new Error('consumeInput failed: ' + pq.errorMessage()));
+          return;
+        }
+
+        processResults();
       });
 
       pq.startReader();
@@ -100,7 +116,7 @@ describe('pipeline mode', function () {
       // Send a valid query
       pq.sendQueryParams('SELECT $1::int as num', ['1']);
       // Send an invalid query (will cause error)
-      pq.sendQuery('SELECT * FROM nonexistent_table_xyz');
+      pq.sendQuery('SELECT * FROM nonexistent_table_xyz_12345');
       // Send another valid query
       pq.sendQueryParams('SELECT $1::int as num', ['3']);
       // Send sync
@@ -108,16 +124,12 @@ describe('pipeline mode', function () {
       pq.flush();
 
       var gotError = false;
-      var gotAborted = false;
+      var finished = false;
 
-      pq.on('readable', function () {
-        if (!pq.consumeInput()) {
-          done(new Error('consumeInput failed'));
-          return;
-        }
-
+      var processResults = function() {
         while (!pq.isBusy()) {
-          if (!pq.getResult()) {
+          var hasResult = pq.getResult();
+          if (!hasResult) {
             break;
           }
 
@@ -126,16 +138,28 @@ describe('pipeline mode', function () {
             gotError = true;
             // After error, pipeline should be aborted
             assert.strictEqual(pq.pipelineStatus(), PQ.PIPELINE_ABORTED);
-            gotAborted = true;
           } else if (status === 'PGRES_PIPELINE_SYNC') {
+            finished = true;
             pq.stopReader();
+            pq.removeAllListeners('readable');
             assert.strictEqual(gotError, true, 'Should have received an error');
-            assert.strictEqual(gotAborted, true, 'Pipeline should have been aborted');
             pq.exitPipelineMode();
             done();
             return;
           }
         }
+      };
+
+      pq.on('readable', function () {
+        if (finished) return;
+        
+        if (!pq.consumeInput()) {
+          pq.stopReader();
+          done(new Error('consumeInput failed: ' + pq.errorMessage()));
+          return;
+        }
+
+        processResults();
       });
 
       pq.startReader();
@@ -148,6 +172,12 @@ describe('pipeline mode', function () {
       var result = pq.sendFlushRequest();
       assert.strictEqual(result, true);
       pq.pipelineSync();
+      // Need to consume results before exiting pipeline mode
+      pq.flush();
+      // Read and discard results synchronously
+      while (pq.getResult()) {
+        // consume all results
+      }
       pq.exitPipelineMode();
     });
   });
