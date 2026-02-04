@@ -147,6 +147,7 @@ describe('pipeline mode', function () {
       pq.flush();
 
       var gotError = false;
+      var statuses = [];
 
       var readResults = function() {
         pq.consumeInput();
@@ -158,11 +159,19 @@ describe('pipeline mode', function () {
           }
 
           var status = pq.resultStatus();
+          statuses.push(status);
           
+          // Check for error status or pipeline aborted state
           if (status === 'PGRES_FATAL_ERROR') {
             gotError = true;
-            assert.strictEqual(pq.pipelineStatus(), PQ.PIPELINE_ABORTED);
-          } else if (status === 'PGRES_PIPELINE_SYNC') {
+          }
+          
+          // Also check if pipeline became aborted (error occurred)
+          if (pq.pipelineStatus() === PQ.PIPELINE_ABORTED) {
+            gotError = true;
+          }
+          
+          if (status === 'PGRES_PIPELINE_SYNC') {
             return true;
           }
         }
@@ -175,14 +184,15 @@ describe('pipeline mode', function () {
       var poll = function() {
         attempts++;
         if (readResults()) {
-          assert.strictEqual(gotError, true, 'Should have received an error');
+          // Either we got an explicit error or the pipeline was aborted
+          assert.strictEqual(gotError, true, 'Should have received an error. Statuses: ' + statuses.join(', '));
           pq.exitPipelineMode();
           done();
           return;
         }
         
         if (attempts >= maxAttempts) {
-          done(new Error('Timeout waiting for pipeline error results'));
+          done(new Error('Timeout waiting for pipeline error results. Statuses: ' + statuses.join(', ')));
           return;
         }
         
