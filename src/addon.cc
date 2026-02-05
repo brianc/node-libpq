@@ -74,6 +74,15 @@ NAN_MODULE_INIT(InitAddon) {
   //Cancel
   Nan::SetPrototypeMethod(tpl, "$cancel", Connection::Cancel);
 
+#ifdef PIPELINE_MODE_SUPPORTED
+  //Pipeline mode (PostgreSQL 14+)
+  Nan::SetPrototypeMethod(tpl, "$enterPipelineMode", Connection::EnterPipelineMode);
+  Nan::SetPrototypeMethod(tpl, "$exitPipelineMode", Connection::ExitPipelineMode);
+  Nan::SetPrototypeMethod(tpl, "$pipelineStatus", Connection::PipelineStatus);
+  Nan::SetPrototypeMethod(tpl, "$pipelineSync", Connection::PipelineSync);
+  Nan::SetPrototypeMethod(tpl, "$sendFlushRequest", Connection::SendFlushRequest);
+#endif
+
   Nan::Set(target,
       Nan::New("PQ").ToLocalChecked(), Nan::GetFunction(tpl).ToLocalChecked());
 }

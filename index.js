@@ -396,3 +396,67 @@ PQ.prototype.getCopyData = function (async) {
 PQ.prototype.cancel = function () {
   return this.$cancel();
 };
+
+// Pipeline mode functions (PostgreSQL 14+)
+// These functions are only available if compiled against PostgreSQL 14 or later
+
+//Enters pipeline mode on the connection
+//Returns true if successful, false if failed
+//Pipeline mode allows sending multiple queries without waiting for results
+PQ.prototype.enterPipelineMode = function () {
+  if (typeof this.$enterPipelineMode !== 'function') {
+    throw new Error('Pipeline mode is not supported. Requires PostgreSQL 14+ client libraries.');
+  }
+  return this.$enterPipelineMode();
+};
+
+//Exits pipeline mode on the connection
+//Returns true if successful, false if failed
+//Can only exit pipeline mode when the queue is empty and no pending results
+PQ.prototype.exitPipelineMode = function () {
+  if (typeof this.$exitPipelineMode !== 'function') {
+    throw new Error('Pipeline mode is not supported. Requires PostgreSQL 14+ client libraries.');
+  }
+  return this.$exitPipelineMode();
+};
+
+//Returns the current pipeline status
+//0 = PQ_PIPELINE_OFF (not in pipeline mode)
+//1 = PQ_PIPELINE_ON (in pipeline mode)
+//2 = PQ_PIPELINE_ABORTED (pipeline aborted due to error)
+PQ.prototype.pipelineStatus = function () {
+  if (typeof this.$pipelineStatus !== 'function') {
+    throw new Error('Pipeline mode is not supported. Requires PostgreSQL 14+ client libraries.');
+  }
+  return this.$pipelineStatus();
+};
+
+//Sends a sync message in pipeline mode
+//This marks a synchronization point - the server will send results
+//for all queries up to this point before processing further queries
+//Returns true if successful, false if failed
+PQ.prototype.pipelineSync = function () {
+  if (typeof this.$pipelineSync !== 'function') {
+    throw new Error('Pipeline mode is not supported. Requires PostgreSQL 14+ client libraries.');
+  }
+  return this.$pipelineSync();
+};
+
+//Sends a request for the server to flush its output buffer
+//Returns true if successful, false if failed
+PQ.prototype.sendFlushRequest = function () {
+  if (typeof this.$sendFlushRequest !== 'function') {
+    throw new Error('Pipeline mode is not supported. Requires PostgreSQL 14+ client libraries.');
+  }
+  return this.$sendFlushRequest();
+};
+
+//Check if pipeline mode is supported (compiled against PostgreSQL 14+)
+PQ.prototype.pipelineModeSupported = function () {
+  return typeof this.$enterPipelineMode === 'function';
+};
+
+// Pipeline status constants
+PQ.PIPELINE_OFF = 0;
+PQ.PIPELINE_ON = 1;
+PQ.PIPELINE_ABORTED = 2;
