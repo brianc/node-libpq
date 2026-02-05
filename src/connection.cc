@@ -361,12 +361,16 @@ NAN_METHOD(Connection::ResultErrorMessage) {
   info.GetReturnValue().Set(Nan::New<v8::String>(status).ToLocalChecked());
 }
 
-# define SET_E(key, name) \
-  field = PQresultErrorField(self->lastResult, key); \
+// set error field from the pg_result "lastResult" parameter
+# define SET_ER(key, name, lastResult) \
+  field = PQresultErrorField(lastResult, key); \
   if(field != NULL) { \
     Nan::Set(result, \
         Nan::New(name).ToLocalChecked(), Nan::New(field).ToLocalChecked()); \
   }
+
+// set error field using the default "self->lastResult" pg_result
+# define SET_E(key, name) SET_ER(key, name, self->lastResult)
 
 NAN_METHOD(Connection::ResultErrorFields) {
   Connection *self = NODE_THIS();
@@ -784,6 +788,8 @@ bool Connection::ConnectDB(const char* paramString) {
   TRACEF("Connection::ConnectDB:Connection parameters: %s\n", paramString);
   this->pq = PQconnectdb(paramString);
 
+  PQsetNoticeReceiver(this->pq, notice_receiver, this);
+
   ConnStatusType status = PQstatus(this->pq);
 
   if(status != CONNECTION_OK) {
@@ -806,6 +812,50 @@ void Connection::InitPollSocket() {
 
 char * Connection::ErrorMessage() {
   return PQerrorMessage(this->pq);
+}
+
+void Connection::notice_receiver(void* connection, const pg_result* noticeResult) {
+  LOG("Connection::notice_received");
+
+  Connection* self = (Connection*) connection;
+  Nan::HandleScope scope;
+
+  v8::Local<v8::Object> result = Nan::New<v8::Object>();
+  char* field;
+  SET_ER(PG_DIAG_SEVERITY, "severity", noticeResult);
+  SET_ER(PG_DIAG_SQLSTATE, "sqlState", noticeResult);
+  SET_ER(PG_DIAG_MESSAGE_PRIMARY, "messagePrimary", noticeResult);
+  SET_ER(PG_DIAG_MESSAGE_DETAIL, "messageDetail", noticeResult);
+  SET_ER(PG_DIAG_MESSAGE_HINT, "messageHint", noticeResult);
+  SET_ER(PG_DIAG_STATEMENT_POSITION, "statementPosition", noticeResult);
+  SET_ER(PG_DIAG_INTERNAL_POSITION, "internalPosition", noticeResult);
+  SET_ER(PG_DIAG_INTERNAL_QUERY, "internalQuery", noticeResult);
+  SET_ER(PG_DIAG_CONTEXT, "context", noticeResult);
+#ifdef MORE_ERROR_FIELDS_SUPPORTED
+  SET_ER(PG_DIAG_SCHEMA_NAME, "schemaName", noticeResult);
+  SET_ER(PG_DIAG_TABLE_NAME, "tableName", noticeResult);
+  SET_ER(PG_DIAG_COLUMN_NAME, "columnName", noticeResult);
+  SET_ER(PG_DIAG_DATATYPE_NAME, "dataTypeName", noticeResult);
+  SET_ER(PG_DIAG_CONSTRAINT_NAME, "constraintName", noticeResult);
+#endif
+  SET_ER(PG_DIAG_SOURCE_FILE, "sourceFile", noticeResult);
+  SET_ER(PG_DIAG_SOURCE_LINE, "sourceLine", noticeResult);
+  SET_ER(PG_DIAG_SOURCE_FUNCTION, "sourceFunction", noticeResult);
+
+  v8::Local<v8::Value> info[2] = {
+    Nan::New<v8::String>("notice").ToLocalChecked(),
+    result,
+  };
+
+  TRACE("CALLING EMIT \"notice\"");
+
+  Nan::TryCatch tc;
+  Nan::AsyncResource *async_emit_f = new Nan::AsyncResource("libpq:connection:emit");
+  async_emit_f->runInAsyncScope(self->handle(), "emit", 2, info);
+  delete async_emit_f;
+  if(tc.HasCaught()) {
+    Nan::FatalException(tc);
+  }
 }
 
 void Connection::on_io_readable(uv_poll_t* handle, int status, int revents) {

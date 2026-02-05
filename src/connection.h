@@ -78,6 +78,7 @@ class Connection : public Nan::ObjectWrap {
 
     Connection();
 
+    static void notice_receiver(void* connection, const pg_result* result);
     static void on_io_readable(uv_poll_t* handle, int status, int revents);
     static void on_io_writable(uv_poll_t* handle, int status, int revents);
     void ReadStart();
