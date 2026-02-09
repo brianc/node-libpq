@@ -310,6 +310,99 @@ Issues a request to cancel the currently executing query _on this instance of li
 
 Returns the version of the connected PostgreSQL backend server as a number.
 
+### Pipeline Mode (PostgreSQL 14+)
+
+Pipeline mode allows sending multiple queries to the server without waiting for results, significantly reducing round-trip latency. These functions are only available when compiled against PostgreSQL 14 or later client libraries.
+
+##### `pq.pipelineModeSupported():boolean`
+
+Returns `true` if pipeline mode is supported (compiled against PostgreSQL 14+), `false` otherwise.
+
+##### `pq.enterPipelineMode():boolean`
+
+Enters pipeline mode on the connection. In pipeline mode, you can send multiple queries using the async send functions (`sendQuery`, `sendQueryParams`, etc.) without waiting for results.
+
+Returns `true` if successful, `false` if failed. Throws an error if pipeline mode is not supported.
+
+##### `pq.exitPipelineMode():boolean`
+
+Exits pipeline mode. Can only be called when the pipeline is empty (all results have been processed).
+
+Returns `true` if successful, `false` if failed.
+
+##### `pq.pipelineStatus():int`
+
+Returns the current pipeline status:
+- `PQ.PIPELINE_OFF` (0): Not in pipeline mode
+- `PQ.PIPELINE_ON` (1): In pipeline mode
+- `PQ.PIPELINE_ABORTED` (2): Pipeline aborted due to error
+
+##### `pq.pipelineSync():boolean`
+
+Sends a synchronization point in the pipeline. The server will process all queries up to this point and send their results before processing any further queries. This is essential for error handling - if a query fails, all subsequent queries until the next sync point are skipped.
+
+Returns `true` if successful, `false` if failed.
+
+##### `pq.sendFlushRequest():boolean`
+
+Sends a request for the server to flush its output buffer. Useful when you want to receive results before sending a sync.
+
+Returns `true` if successful, `false` if failed.
+
+#### Pipeline Mode Constants
+
+```js
+PQ.PIPELINE_OFF     // 0 - Not in pipeline mode
+PQ.PIPELINE_ON      // 1 - In pipeline mode  
+PQ.PIPELINE_ABORTED // 2 - Pipeline aborted due to error
+```
+
+#### Pipeline Mode Example
+
+```js
+var PQ = require('libpq');
+var pq = new PQ();
+pq.connectSync();
+
+if (!pq.pipelineModeSupported()) {
+  console.log('Pipeline mode requires PostgreSQL 14+ client libraries');
+  process.exit(1);
+}
+
+// Enter pipeline mode
+pq.enterPipelineMode();
+pq.setNonBlocking(true);
+
+// Send multiple queries without waiting
+pq.sendQueryParams('SELECT $1::int', ['1']);
+pq.sendQueryParams('SELECT $1::int', ['2']);
+pq.sendQueryParams('SELECT $1::int', ['3']);
+
+// Mark end of pipeline batch
+pq.pipelineSync();
+pq.flush();
+
+// Process results asynchronously
+pq.on('readable', function() {
+  pq.consumeInput();
+  while (!pq.isBusy()) {
+    if (!pq.getResult()) break;
+    
+    var status = pq.resultStatus();
+    if (status === 'PGRES_TUPLES_OK') {
+      console.log('Result:', pq.getvalue(0, 0));
+    } else if (status === 'PGRES_PIPELINE_SYNC') {
+      // All results received
+      pq.stopReader();
+      pq.exitPipelineMode();
+      pq.finish();
+    }
+  }
+});
+
+pq.startReader();
+```
+
 ## testing
 
 ```sh

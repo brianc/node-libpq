@@ -56,6 +56,13 @@ class Connection : public Nan::ObjectWrap {
     static NAN_METHOD(PutCopyEnd);
     static NAN_METHOD(GetCopyData);
     static NAN_METHOD(Cancel);
+#ifdef PIPELINE_MODE_SUPPORTED
+    static NAN_METHOD(EnterPipelineMode);
+    static NAN_METHOD(ExitPipelineMode);
+    static NAN_METHOD(PipelineStatus);
+    static NAN_METHOD(PipelineSync);
+    static NAN_METHOD(SendFlushRequest);
+#endif
 
     bool ConnectDB(const char* paramString);
     void InitPollSocket();
