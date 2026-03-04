@@ -56,6 +56,7 @@ class Connection : public Nan::ObjectWrap {
     static NAN_METHOD(PutCopyEnd);
     static NAN_METHOD(GetCopyData);
     static NAN_METHOD(Cancel);
+    static NAN_METHOD(TransactionStatus);
 #ifdef PIPELINE_MODE_SUPPORTED
     static NAN_METHOD(EnterPipelineMode);
     static NAN_METHOD(ExitPipelineMode);

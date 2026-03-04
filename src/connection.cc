@@ -91,6 +91,13 @@ NAN_METHOD(Connection::ServerVersion) {
   info.GetReturnValue().Set(PQserverVersion(self->pq));
 }
 
+NAN_METHOD(Connection::TransactionStatus) {
+  TRACE("Connection::TransactionStatus");
+  Connection* self = NODE_THIS();
+  int status = PQtransactionStatus(self->pq);
+  info.GetReturnValue().Set(status);
+}
+
 
 NAN_METHOD(Connection::Exec) {
   Connection *self = NODE_THIS();
