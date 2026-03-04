@@ -62,6 +62,12 @@ PQ.prototype.serverVersion = function () {
   return this.$serverVersion();
 };
 
+// returns the current in-transaction status of the server
+// 0=IDLE, 1=ACTIVE, 2=INTRANS, 3=INERROR, 4=UNKNOWN
+PQ.prototype.transactionStatus = function () {
+  return this.$transactionStatus();
+};
+
 //finishes the connection & closes it
 PQ.prototype.finish = function () {
   this.connected = false;

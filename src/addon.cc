@@ -15,6 +15,7 @@ NAN_MODULE_INIT(InitAddon) {
   Nan::SetPrototypeMethod(tpl, "$resultErrorFields", Connection::ResultErrorFields);
   Nan::SetPrototypeMethod(tpl, "$socket", Connection::Socket);
   Nan::SetPrototypeMethod(tpl, "$serverVersion", Connection::ServerVersion);
+  Nan::SetPrototypeMethod(tpl, "$transactionStatus", Connection::TransactionStatus);
 
   //sync query functions
   Nan::SetPrototypeMethod(tpl, "$exec", Connection::Exec);
