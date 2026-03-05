@@ -8,6 +8,7 @@ Connection::Connection() : Nan::ObjectWrap() {
   is_reffed = false;
   is_success_poll_init = false;
   poll_watcher.data = this;
+  async_emit_resource = nullptr;
 }
 
 NAN_METHOD(Connection::Create) {
@@ -82,6 +83,10 @@ NAN_METHOD(Connection::Finish) {
   if(self->is_reffed) {
     self->is_reffed = false;
     self->Unref();
+  }
+  if (self->async_emit_resource != nullptr) {
+    delete self->async_emit_resource;
+    self->async_emit_resource = nullptr;
   }
 }
 
@@ -921,15 +926,17 @@ void Connection::DeleteCStringArray(char** array, int length) {
 void Connection::Emit(const char* message) {
   Nan::HandleScope scope;
 
+  if (async_emit_resource == nullptr) {
+    async_emit_resource = new Nan::AsyncResource("libpq:connection:emit");
+  }
+
   v8::Local<v8::Value> info[1] = {
     Nan::New<v8::String>(message).ToLocalChecked()
   };
 
   TRACE("CALLING EMIT");
   Nan::TryCatch tc;
-  Nan::AsyncResource *async_emit_f = new Nan::AsyncResource("libpq:connection:emit");
-  async_emit_f->runInAsyncScope(handle(), "emit", 1, info);
-  delete async_emit_f;
+  async_emit_resource->runInAsyncScope(handle(), "emit", 1, info);
   if(tc.HasCaught()) {
     Nan::FatalException(tc);
   }

@@ -76,6 +76,7 @@ class Connection : public Nan::ObjectWrap {
     bool is_reffed;
     bool is_reading;
     bool is_success_poll_init;
+    Nan::AsyncResource* async_emit_resource;
 
     Connection();
 
