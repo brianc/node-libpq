@@ -22,7 +22,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [18.x, 20.x, 22.x, 24.x]
+        node-version: [18.x, 20.x, 22.x, 24.x, 26.x]
 
     steps:
       - uses: actions/checkout@v3
@@ -30,6 +30,11 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
+      - name: Override yargs for Node.js 26
+        if: ${{ matrix.node-version == '26.x' }}
+        run: |
+          npm pkg set overrides.yargs=18.0.0
+          npm install
       - run: npm ci
       - run: npm run build --if-present
       - run: PGTESTNOSSL=true PGUSER=postgres PGHOST=localhost PGPASSWORD=postgres PGDATABASE=ci_db_test npm test
