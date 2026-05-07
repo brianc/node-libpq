@@ -656,6 +656,10 @@ NAN_METHOD(Connection::PutCopyData) {
 
   Connection* self = NODE_THIS();
 
+  if (!node::Buffer::HasInstance(info[0]) {
+    return Nan::ThrowTypeError("First argument must be a Buffer");
+  }
+
   v8::Local<v8::Object> buffer = info[0].As<v8::Object>();
 
   char* data = node::Buffer::Data(buffer);
