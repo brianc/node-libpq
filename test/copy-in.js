@@ -45,4 +45,12 @@ describe('COPY IN', function() {
     this.pq.exec('SELECT COUNT(*) FROM test_data');
     assert.equal(this.pq.getvalue(0, 0), 4);
   });
+
+  it('throws TypeError when non-Buffer is passed to putCopyData', function() {
+    assert.throws(function() {
+      this.pq.$putCopyData("not a buffer");
+    }.bind(this), function(err) {
+      return err instanceof TypeError;
+    });
+  });
 });
