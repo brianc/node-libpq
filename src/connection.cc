@@ -656,7 +656,7 @@ NAN_METHOD(Connection::PutCopyData) {
 
   Connection* self = NODE_THIS();
 
-  if (!node::Buffer::HasInstance(info[0]) {
+  if (!node::Buffer::HasInstance(info[0])) {
     return Nan::ThrowTypeError("First argument must be a Buffer");
   }
 
