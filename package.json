@@ -29,6 +29,9 @@
     "mocha": "^10.8.2",
     "okay": "^1.0.0"
   },
+  "overrides": {
+    "yargs": "16.2.2"
+  },
   "prettier": {
     "singleQuote": true
   }
