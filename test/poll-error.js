@@ -11,15 +11,18 @@ describe('poll error', function () {
   var proxy;
   var proxyPort;
   var clientSockets;
+  var sockets;
 
   beforeEach(function (done) {
     clientSockets = [];
+    sockets = [];
     proxy = net.createServer(function (client) {
       var upstream = net.connect(
         Number(process.env.PGPORT || 5432),
         process.env.PGHOST || 'localhost'
       );
       clientSockets.push(client);
+      sockets.push(client, upstream);
       client.pipe(upstream);
       upstream.pipe(client);
       client.on('error', function () {});
@@ -32,6 +35,11 @@ describe('poll error', function () {
   });
 
   afterEach(function (done) {
+    // the reset does not reach the upstream socket through the pipe, so close every socket by
+    // hand: one left open keeps the event loop alive and mocha never exits
+    sockets.forEach(function (socket) {
+      socket.destroy();
+    });
     proxy.close(function () {
       done();
     });
