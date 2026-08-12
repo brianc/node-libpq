@@ -824,6 +824,16 @@ void Connection::on_io_readable(uv_poll_t* handle, int status, int revents) {
   LOG("Connection::on_io_readable");
   TRACEF("Connection::on_io_readable:status %d\n", status);
   TRACEF("Connection::on_io_readable:revents %d\n", revents);
+  if(status < 0) {
+    // libuv signals a poll error (POLLERR, as a reset peer produces) with status < 0 and
+    // revents == 0, having already stopped the handle, so no further event can arrive. Emit
+    // anyway: consumeInput() then surfaces the error, instead of the connection going silent.
+    LOG("Connection::on_io_readable poll error");
+    Connection* self = (Connection*) handle->data;
+    self->is_reading = false;
+    self->Emit("readable");
+    return;
+  }
   if(revents & UV_READABLE) {
     LOG("Connection::on_io_readable UV_READABLE");
     Connection* self = (Connection*) handle->data;
@@ -836,6 +846,14 @@ void Connection::on_io_writable(uv_poll_t* handle, int status, int revents) {
   LOG("Connection::on_io_writable");
   TRACEF("Connection::on_io_writable:status %d\n", status);
   TRACEF("Connection::on_io_writable:revents %d\n", revents);
+  if(status < 0) {
+    // Same as the read side: the handle is already stopped, so release the writable() waiter
+    // now or it never runs. flush() reports the error.
+    LOG("Connection::on_io_writable poll error");
+    Connection* self = (Connection*) handle->data;
+    self->Emit("writable");
+    return;
+  }
   if(revents & UV_WRITABLE) {
     LOG("Connection::on_io_readable UV_WRITABLE");
     Connection* self = (Connection*) handle->data;
