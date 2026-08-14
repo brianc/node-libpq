@@ -5,7 +5,7 @@ var bufferFrom = require('buffer-from')
 describe('COPY IN', function() {
   helper.setupIntegration();
 
-  it('check existing data assuptions', function() {
+  it('check existing data assumptions', function() {
     this.pq.exec('SELECT COUNT(*) FROM test_data');
     assert.equal(this.pq.getvalue(0, 0), 3);
   });
@@ -44,5 +44,13 @@ describe('COPY IN', function() {
 
     this.pq.exec('SELECT COUNT(*) FROM test_data');
     assert.equal(this.pq.getvalue(0, 0), 4);
+  });
+
+  it('throws TypeError when non-Buffer is passed to putCopyData', function() {
+    assert.throws(function() {
+      this.pq.$putCopyData("not a buffer");
+    }.bind(this), function(err) {
+      return err instanceof TypeError;
+    });
   });
 });
