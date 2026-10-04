@@ -828,7 +828,7 @@ void Connection::on_io_readable(uv_poll_t* handle, int status, int revents) {
     LOG("Connection::on_io_readable UV_READABLE");
     Connection* self = (Connection*) handle->data;
     LOG("Got connection pointer");
-    self->Emit("readable");
+    self->Emit(self->readable_name);
   }
 }
 
@@ -840,7 +840,7 @@ void Connection::on_io_writable(uv_poll_t* handle, int status, int revents) {
     LOG("Connection::on_io_readable UV_WRITABLE");
     Connection* self = (Connection*) handle->data;
     self->WriteStop();
-    self->Emit("writable");
+    self->Emit(self->writable_name);
   }
 }
 
@@ -923,20 +923,27 @@ void Connection::DeleteCStringArray(char** array, int length) {
   delete [] array;
 }
 
-void Connection::Emit(const char* message) {
+static v8::Local<v8::String> Internalized(const char* name) {
+  return v8::String::NewFromUtf8(v8::Isolate::GetCurrent(), name, v8::NewStringType::kInternalized).ToLocalChecked();
+}
+
+void Connection::Emit(Nan::Global<v8::String>& event) {
   Nan::HandleScope scope;
 
   if (async_emit_resource == nullptr) {
     async_emit_resource = new Nan::AsyncResource("libpq:connection:emit");
+    // Made once and internalized: a new string per event, and looking up "emit"
+    // by a name that is not internalized, cost more than the rest of the call
+    emit_name.Reset(Internalized("emit"));
+    readable_name.Reset(Internalized("readable"));
+    writable_name.Reset(Internalized("writable"));
   }
 
-  v8::Local<v8::Value> info[1] = {
-    Nan::New<v8::String>(message).ToLocalChecked()
-  };
+  v8::Local<v8::Value> info[1] = { Nan::New(event) };
 
   TRACE("CALLING EMIT");
   Nan::TryCatch tc;
-  async_emit_resource->runInAsyncScope(handle(), "emit", 1, info);
+  async_emit_resource->runInAsyncScope(handle(), Nan::New(emit_name), 1, info);
   if(tc.HasCaught()) {
     Nan::FatalException(tc);
   }

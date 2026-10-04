@@ -77,6 +77,10 @@ class Connection : public Nan::ObjectWrap {
     bool is_reading;
     bool is_success_poll_init;
     Nan::AsyncResource* async_emit_resource;
+    // Made once, see Emit()
+    Nan::Global<v8::String> emit_name;
+    Nan::Global<v8::String> readable_name;
+    Nan::Global<v8::String> writable_name;
 
     Connection();
 
@@ -91,7 +95,7 @@ class Connection : public Nan::ObjectWrap {
     static char* NewCString(v8::Local<v8::Value> val);
     static char** NewCStringArray(v8::Local<v8::Array> jsParams);
     static void DeleteCStringArray(char** array, int length);
-    void Emit(const char* message);
+    void Emit(Nan::Global<v8::String>& event);
 };
 
 #endif
