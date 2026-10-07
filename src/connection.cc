@@ -38,6 +38,10 @@ NAN_METHOD(Connection::Connect) {
 
   Connection* self = NODE_THIS();
 
+  if(!info[1]->IsFunction()) {
+    return Nan::ThrowTypeError("Must provide a connection callback");
+  }
+
   v8::Local<v8::Function> callback = info[1].As<v8::Function>();
   LOG("About to make callback");
   Nan::Callback* nanCallback = new Nan::Callback(callback);
@@ -120,10 +124,18 @@ NAN_METHOD(Connection::ExecParams) {
   Nan::Utf8String commandText(info[0]);
   TRACEF("Connection::Exec: %s\n", *commandText);
 
+  if(!info[1]->IsArray()) {
+    return Nan::ThrowTypeError("Parameters must be an array");
+  }
+
   v8::Local<v8::Array> jsParams = v8::Local<v8::Array>::Cast(info[1]);
 
   int numberOfParams = jsParams->Length();
   char **parameters = NewCStringArray(jsParams);
+
+  if(parameters == NULL) {
+    return;
+  }
 
   PGresult* result = PQexecParams(
       self->pq,
@@ -168,10 +180,18 @@ NAN_METHOD(Connection::ExecPrepared) {
 
   TRACEF("Connection::ExecPrepared: %s\n", *statementName);
 
+  if(!info[1]->IsArray()) {
+    return Nan::ThrowTypeError("Parameters must be an array");
+  }
+
   v8::Local<v8::Array> jsParams = v8::Local<v8::Array>::Cast(info[1]);
 
   int numberOfParams = jsParams->Length();
   char** parameters = NewCStringArray(jsParams);
+
+  if(parameters == NULL) {
+    return;
+  }
 
   PGresult* result = PQexecPrepared(
       self->pq,
@@ -431,10 +451,18 @@ NAN_METHOD(Connection::SendQueryParams) {
   Nan::Utf8String commandText(info[0]);
   TRACEF("Connection::SendQueryParams: %s\n", *commandText);
 
+  if(!info[1]->IsArray()) {
+    return Nan::ThrowTypeError("Parameters must be an array");
+  }
+
   v8::Local<v8::Array> jsParams = v8::Local<v8::Array>::Cast(info[1]);
 
   int numberOfParams = jsParams->Length();
   char** parameters = NewCStringArray(jsParams);
+
+  if(parameters == NULL) {
+    return;
+  }
 
   int success = PQsendQueryParams(
       self->pq,
@@ -481,10 +509,18 @@ NAN_METHOD(Connection::SendQueryPrepared) {
   Nan::Utf8String statementName(info[0]);
   TRACEF("Connection::SendQueryPrepared: %s\n", *statementName);
 
+  if(!info[1]->IsArray()) {
+    return Nan::ThrowTypeError("Parameters must be an array");
+  }
+
   v8::Local<v8::Array> jsParams = v8::Local<v8::Array>::Cast(info[1]);
 
   int numberOfParams = jsParams->Length();
   char** parameters = NewCStringArray(jsParams);
+
+  if(parameters == NULL) {
+    return;
+  }
 
   int success = PQsendQueryPrepared(
       self->pq,
@@ -595,7 +631,13 @@ NAN_METHOD(Connection::EscapeLiteral) {
 
   Connection* self = NODE_THIS();
 
-  Nan::Utf8String str(Nan::To<v8::String>(info[0]).ToLocalChecked());
+  v8::Local<v8::String> jsString;
+
+  if(!Nan::To<v8::String>(info[0]).ToLocal(&jsString)) {
+    return;
+  }
+
+  Nan::Utf8String str(jsString);
 
   TRACEF("Connection::EscapeLiteral:input %s\n", *str);
   char* result = PQescapeLiteral(self->pq, *str, str.length());
@@ -614,7 +656,13 @@ NAN_METHOD(Connection::EscapeIdentifier) {
 
   Connection* self = NODE_THIS();
 
-  Nan::Utf8String str(Nan::To<v8::String>(info[0]).ToLocalChecked());
+  v8::Local<v8::String> jsString;
+
+  if(!Nan::To<v8::String>(info[0]).ToLocal(&jsString)) {
+    return;
+  }
+
+  Nan::Utf8String str(jsString);
 
   TRACEF("Connection::EscapeIdentifier:input %s\n", *str);
   char* result = PQescapeIdentifier(self->pq, *str, str.length());
@@ -655,6 +703,10 @@ NAN_METHOD(Connection::PutCopyData) {
   LOG("Connection::PutCopyData");
 
   Connection* self = NODE_THIS();
+
+  if(!node::Buffer::HasInstance(info[0])) {
+    return Nan::ThrowTypeError("Buffer expected");
+  }
 
   v8::Local<v8::Object> buffer = info[0].As<v8::Object>();
 
@@ -902,7 +954,13 @@ char** Connection::NewCStringArray(v8::Local<v8::Array> jsParams) {
   char** parameters = new char*[numberOfParams];
 
   for(int i = 0; i < numberOfParams; i++) {
-    v8::Local<v8::Value> val = Nan::Get(jsParams, i).ToLocalChecked();
+    v8::Local<v8::Value> val;
+
+    if(!Nan::Get(jsParams, i).ToLocal(&val)) {
+      DeleteCStringArray(parameters, i);
+      return NULL;
+    }
+
     if(val->IsNull()) {
       parameters[i] = NULL;
       continue;
