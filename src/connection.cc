@@ -1,4 +1,5 @@
 #include "addon.h"
+#include <vector>
 
 Connection::Connection() : Nan::ObjectWrap() {
   TRACE("Connection::Constructor");
@@ -307,6 +308,34 @@ NAN_METHOD(Connection::Getisnull) {
   int rowValue = PQgetisnull(res, rowNumber, colNumber);
 
   info.GetReturnValue().Set(rowValue == 1);
+}
+
+// every value of the result in one call: one native call per cell is the main cost of a large result
+NAN_METHOD(Connection::Getvalues) {
+  TRACE("Connection::Getvalues");
+  Connection *self = NODE_THIS();
+
+  PGresult* res = self->lastResult;
+  int rows = PQntuples(res);
+  int cols = PQnfields(res);
+  v8::Isolate* isolate = info.GetIsolate();
+  std::vector<v8::Local<v8::Value>> values((size_t)rows * cols);
+  v8::Local<v8::Value> null = Nan::Null();
+
+  size_t i = 0;
+  for (int r = 0; r < rows; r++) {
+    for (int c = 0; c < cols; c++, i++) {
+      if (PQgetisnull(res, r, c)) {
+        values[i] = null;
+      } else {
+        values[i] = v8::String::NewFromUtf8(
+          isolate, PQgetvalue(res, r, c), v8::NewStringType::kNormal, PQgetlength(res, r, c)
+        ).ToLocalChecked();
+      }
+    }
+  }
+
+  info.GetReturnValue().Set(v8::Array::New(isolate, values.data(), values.size()));
 }
 
 NAN_METHOD(Connection::Nparams) {

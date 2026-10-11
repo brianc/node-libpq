@@ -27,6 +27,7 @@ class Connection : public Nan::ObjectWrap {
     static NAN_METHOD(Ftype);
     static NAN_METHOD(Getvalue);
     static NAN_METHOD(Getisnull);
+    static NAN_METHOD(Getvalues);
     static NAN_METHOD(Nparams);
     static NAN_METHOD(Paramtype);
     static NAN_METHOD(CmdStatus);

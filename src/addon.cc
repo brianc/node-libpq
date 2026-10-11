@@ -51,6 +51,7 @@ NAN_MODULE_INIT(InitAddon) {
   Nan::SetPrototypeMethod(tpl, "$ftype", Connection::Ftype);
   Nan::SetPrototypeMethod(tpl, "$getvalue", Connection::Getvalue);
   Nan::SetPrototypeMethod(tpl, "$getisnull", Connection::Getisnull);
+  Nan::SetPrototypeMethod(tpl, "$getvalues", Connection::Getvalues);
   Nan::SetPrototypeMethod(tpl, "$nparams", Connection::Nparams);
   Nan::SetPrototypeMethod(tpl, "$paramtype", Connection::Paramtype);
   Nan::SetPrototypeMethod(tpl, "$cmdStatus", Connection::CmdStatus);

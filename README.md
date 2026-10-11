@@ -193,6 +193,10 @@ Retrieve the text value at a given tuple (row) and field (column) offset. Both o
 
 Returns `true` if the value at the given offsets is actually `null`.  Otherwise returns `false`.  This is because `pq.getvalue()` returns an empty string for both an actual empty string and for a `null` value.  Weird, huh?
 
+##### `pq.getvalues():Array<string|null>`
+
+Retrieve all the text values of the result in one flat array, row by row: the value at tuple `t` and field `f` is at index `t * pq.nfields() + f`. A null value is returned as `null`. Faster than calling `pq.getvalue()` for each value of a large result.
+
 ##### `pq.nparams():int`
 
 Returns the number of parameters a prepared statement expects.

@@ -27,6 +27,10 @@ describe('low-level query integration tests', function () {
       assert.strictEqual(this.pq.getisnull(2, 1), true);
     });
 
+    it('has correct values in one call', function () {
+      assert.deepStrictEqual(this.pq.getvalues(), ['brian', '32', 'aaron', '30', '', null]);
+    });
+
     it('has correct identifiers', function() {
       assert.notEqual(this.pq.ftable(0), 0);
       assert.notEqual(this.pq.ftable(1), 0);

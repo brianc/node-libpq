@@ -238,6 +238,9 @@ PQ.prototype.getvalue = PQ.prototype.$getvalue;
 //returns true/false if the value is null
 PQ.prototype.getisnull = PQ.prototype.$getisnull;
 
+//returns all the values of the result in one flat array, row by row, null for a null value
+PQ.prototype.getvalues = PQ.prototype.$getvalues;
+
 //returns the number of parameters of a prepared statement
 PQ.prototype.nparams = PQ.prototype.$nparams;
 
